@@ -1,1 +1,12 @@
 @import "tailwindcss";
+
+@tailwind utilities;
+
+@layer components {
+  .list-style {
+    @apply text-[20px] font-semibold cursor-pointer;
+  }
+  .list-style-active {
+    @apply text-[20px] font-semibold cursor-pointer text-[#E9BD8C];
+  }
+}
