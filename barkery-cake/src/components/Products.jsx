@@ -12,6 +12,7 @@ export default function Products() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 place-items-center text-white">
           {products.map((product) => (
             <div
+              key={product.id}
               className="h-[320px] w-[280px] rounded-2xl p-5"
               style={{ backgroundImage: `url(${bg})` }}
             >
