@@ -4,6 +4,9 @@ import cake3 from "../assets/cake3.png";
 import cake4 from "../assets/cake4.png";
 import cake5 from "../assets/cake5.png";
 import cake6 from "../assets/cake6.png";
+import sample1 from "../assets/sample1.png";
+import sample2 from "../assets/sample2.png";
+import sample3 from "../assets/sample3.png";
 import product1 from "../assets/product1.png";
 import product2 from "../assets/product2.png";
 import product3 from "../assets/product3.png";
@@ -65,6 +68,27 @@ export const products = [
     name: "Whole Grain Bread",
     price: "40$",
     img: product6,
+  },
+];
+
+export const featuredTreat = [
+  {
+    id: 1,
+    name: `Puff Pastry `,
+    price: "$8",
+    img: sample1,
+  },
+  {
+    id: 2,
+    name: `Doughnuts `,
+    price: "$8",
+    img: sample2,
+  },
+  {
+    id: 3,
+    name: `Brownies `,
+    price: "$8",
+    img: sample3,
   },
 ];
 

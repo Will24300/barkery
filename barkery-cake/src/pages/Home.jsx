@@ -1,4 +1,5 @@
 import ExploreMenu from "../components/ExploreMenu";
+import FeaturedTreats from "../components/FeaturedTreats";
 import Navbar from "../components/Navbar";
 import Products from "../components/Products";
 
@@ -8,6 +9,7 @@ export default function Home() {
       <Navbar />
       <Products />
       <ExploreMenu />
+      <FeaturedTreats />
     </>
   );
 }

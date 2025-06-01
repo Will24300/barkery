@@ -2,6 +2,7 @@ import { useState } from "react";
 import { data } from "../data/data";
 import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
+import bg2 from "../assets/bg2.png";
 
 export default function ExploreMenu() {
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
@@ -52,7 +53,7 @@ export default function ExploreMenu() {
               key={index}
             >
               <div
-                className="h-4/5 bg-center bg-cover rounded-t  "
+                className="h-4/5 bg-center bg-cover rounded-t  cursor-pointer hover:scale-102 duration-150"
                 style={{ backgroundImage: `url(${item.image})` }}
               ></div>
               <div
@@ -96,6 +97,22 @@ export default function ExploreMenu() {
           ))}
         </div>
       </section>
+
+      <div
+        className="h-[55vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
+        style={{ backgroundImage: `url(${bg2})` }}
+      >
+        <h2 className="text-[40px] font-sansita text-white w-[25%] text-center leading-13">
+          About us
+        </h2>
+        <p className="text-[#B9B9B9] text-[17px] w-[25%] text-center my-5">
+          Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum
+          lorem. Morbi convallis.
+        </p>
+        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer ">
+          Read More
+        </button>
+      </div>
     </>
   );
 }
