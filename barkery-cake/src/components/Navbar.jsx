@@ -36,7 +36,9 @@ export default function Navbar() {
   return (
     <>
       <nav
+
         className="h-screen w-full mb-10 text-white px-5 md:px-20 md:py-5 bg-cover bg-center"
+
         style={{ backgroundImage: `url(${bg})` }}
       >
         <div className="flex justify-between items-center py-4">

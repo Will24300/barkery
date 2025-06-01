@@ -2,8 +2,53 @@ import cake1 from "../assets/cake1.png";
 import cake2 from "../assets/cake2.png";
 import cake3 from "../assets/cake3.png";
 import cake4 from "../assets/cake4.png";
-// import cake5 from "../assets/cake5.png";
-// import cake6 from "../assets/cake6.png";
+import cake5 from "../assets/cake5.png";
+import cake6 from "../assets/cake6.png";
+import product1 from "../assets/product1.png";
+import product2 from "../assets/product2.png";
+import product3 from "../assets/product3.png";
+import product4 from "../assets/product4.png";
+import product5 from "../assets/product5.png";
+import product6 from "../assets/product6.png";
+
+export const products = [
+  {
+    id: 1,
+    name: `Whole Grain Bread`,
+    price: "40$",
+    img: product1,
+  },
+  {
+    id: 2,
+    name: "Whole Grain Bread",
+    price: "40$",
+    img: product2,
+  },
+  {
+    id: 3,
+    name: "Whole Grain Bread",
+    price: "40$",
+    img: product3,
+  },
+  {
+    id: 4,
+    name: "Whole Grain Bread",
+    price: "40$",
+    img: product4,
+  },
+  {
+    id: 5,
+    name: "Whole Grain Bread",
+    price: "40$",
+    img: product5,
+  },
+  {
+    id: 6,
+    name: "Whole Grain Bread",
+    price: "40$",
+    img: product6,
+  },
+];
 
 export const data = {
   categories: [
@@ -38,6 +83,21 @@ export const data = {
           price: 28.99,
           description: "Classic New York style cheesecake",
           image: cake4,
+        },
+        {
+          id: 105,
+          name: "Lemon Drizzle Cake",
+          price: 23.99,
+          description: "Zesty lemon cake with a tangy drizzle glaze",
+          image: cake5,
+        },
+        {
+          id: 106,
+          name: "Vanilla Sponge Cake",
+          price: 21.99,
+          description:
+            "Light and fluffy vanilla cake with buttercream frosting",
+          image: cake6,
         },
       ],
     },

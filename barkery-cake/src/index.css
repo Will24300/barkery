@@ -14,4 +14,10 @@
   .list-style-active {
     @apply text-[20px] font-semibold cursor-pointer text-[#E9BD8C];
   }
+  .list-menu-style {
+    @apply text-[18px] text-[#5D5D5D] font-semibold  border-[#933C24] cursor-pointer;
+  }
+  .counter-style {
+    @apply w-[80px] rounded-2xl bg-white absolute top-[48%] left-2  flex justify-between items-center;
+  }
 }
