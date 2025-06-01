@@ -1,7 +1,7 @@
-import exress from "express";
+import express from "express";
 import getUserData from "../controllers/userController.js";
 
-const router = exress.Router();
+const router = express.Router();
 
 router.get("/", getUserData);
 

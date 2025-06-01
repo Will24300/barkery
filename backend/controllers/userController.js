@@ -12,6 +12,8 @@ const getUserData = async (req, res) => {
         .json({ error: "Database error while verifying user" });
     }
     if (results.length === 0) {
+      console.log("user not found", results);
+
       return res.status(404).json({ error: "user not found" });
     }
 
