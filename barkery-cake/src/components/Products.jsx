@@ -46,7 +46,7 @@ export default function Products() {
         </div>
       </section>
       <div
-        className="h-[60vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
+        className="h-[55vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
         style={{ backgroundImage: `url(${bg1})` }}
       >
         <h2 className="text-[40px] font-sansita text-[#933C24] w-[25%] text-center leading-13">
@@ -55,7 +55,7 @@ export default function Products() {
         <p className="text-[#5D5D5D] text-[17px] w-[25%] text-center my-5">
           Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibenjgg.
         </p>
-        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer">
+        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer ">
           Learn More
         </button>
       </div>

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { data } from "../data/data";
 import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
+import bg2 from "../assets/bg2.png";
 
 export default function ExploreMenu() {
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
@@ -17,7 +18,6 @@ export default function ExploreMenu() {
   const updateCounterDecrease = (id) => {
     setCounters((prev) => ({ ...prev, [id]: prev[id] - 1 }));
   };
-
 
   const handleToggle = (index) => {
     setIsActiveIndex(isActiveIndex === index ? 0 : index);
@@ -76,10 +76,6 @@ export default function ExploreMenu() {
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
                   <GoPlus />
-
-                <span className="bg-green-200 text-green-800 px-2 rounded-2xl cursor-pointer">
-                  +
-
                 </span>
               </div>
               <div className="p-4">
@@ -90,11 +86,7 @@ export default function ExploreMenu() {
                 <div className="flex justify-between items-center">
                   <p className="text-[#933C24] font-semibold">${item.price}</p>
                   <button
-
-                    className="block bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-
                     className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-
                     onClick={() => updateCounter(item.id)}
                   >
                     Add
@@ -105,6 +97,22 @@ export default function ExploreMenu() {
           ))}
         </div>
       </section>
+
+      <div
+        className="h-[55vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
+        style={{ backgroundImage: `url(${bg2})` }}
+      >
+        <h2 className="text-[40px] font-sansita text-white w-[25%] text-center leading-13">
+          About us
+        </h2>
+        <p className="text-[#B9B9B9] text-[17px] w-[25%] text-center my-5">
+          Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum
+          lorem. Morbi convallis.
+        </p>
+        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer ">
+          Read More
+        </button>
+      </div>
     </>
   );
 }
