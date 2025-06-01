@@ -2,6 +2,8 @@ import cake1 from "../assets/cake1.png";
 import cake2 from "../assets/cake2.png";
 import cake3 from "../assets/cake3.png";
 import cake4 from "../assets/cake4.png";
+import cake5 from "../assets/cake5.png";
+import cake6 from "../assets/cake6.png";
 import product1 from "../assets/product1.png";
 import product2 from "../assets/product2.png";
 import product3 from "../assets/product3.png";
@@ -81,6 +83,21 @@ export const data = {
           price: 28.99,
           description: "Classic New York style cheesecake",
           image: cake4,
+        },
+        {
+          id: 105,
+          name: "Lemon Drizzle Cake",
+          price: 23.99,
+          description: "Zesty lemon cake with a tangy drizzle glaze",
+          image: cake5,
+        },
+        {
+          id: 106,
+          name: "Vanilla Sponge Cake",
+          price: 21.99,
+          description:
+            "Light and fluffy vanilla cake with buttercream frosting",
+          image: cake6,
         },
       ],
     },
