@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { data } from "../data/data";
+import { GoPlus } from "react-icons/go";
+import { FiMinus } from "react-icons/fi";
 
 export default function ExploreMenu() {
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
   const [isActiveIndex, setIsActiveIndex] = useState(0);
   const [counters, setCounters] = useState({});
+  const [buttonCount, setButtonCount] = useState(1);
   const categorie = data.categories[isActiveIndex].products;
 
   const updateCounter = (id) => {
@@ -60,16 +63,16 @@ export default function ExploreMenu() {
               >
                 <span
                   onClick={() => updateCounterDecrease(item.id)}
-                  className="bg-red-300 text-red-600 text-[16px] px-2 rounded-2xl cursor-pointer"
+                  className="bg-red-300 text-red-600 text-[16px] p-1 rounded-2xl cursor-pointer"
                 >
-                  -
+                  <FiMinus />
                 </span>
                 <span className="px-1">{counters[item.id] || 0}</span>
                 <span
                   onClick={() => updateCounter(item.id)}
-                  className="bg-green-200 text-green-800 px-2 rounded-2xl cursor-pointer"
+                  className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
-                  +
+                  <GoPlus />
                 </span>
               </div>
               <div className="p-4">
@@ -83,7 +86,7 @@ export default function ExploreMenu() {
                     className="block bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
                     onClick={() => updateCounter(item.id)}
                   >
-                    {counters[item.id] === 0 ? "Add " : counters[item.id]}
+                    Add
                   </button>
                 </div>
               </div>
