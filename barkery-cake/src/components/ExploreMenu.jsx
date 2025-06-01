@@ -7,15 +7,17 @@ export default function ExploreMenu() {
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
   const [isActiveIndex, setIsActiveIndex] = useState(0);
   const [counters, setCounters] = useState({});
-  const [buttonCount, setButtonCount] = useState(1);
+
   const categorie = data.categories[isActiveIndex].products;
 
   const updateCounter = (id) => {
     setCounters((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
   };
+
   const updateCounterDecrease = (id) => {
     setCounters((prev) => ({ ...prev, [id]: prev[id] - 1 }));
   };
+
 
   const handleToggle = (index) => {
     setIsActiveIndex(isActiveIndex === index ? 0 : index);
@@ -68,11 +70,16 @@ export default function ExploreMenu() {
                   <FiMinus />
                 </span>
                 <span className="px-1">{counters[item.id] || 0}</span>
+
                 <span
                   onClick={() => updateCounter(item.id)}
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
                   <GoPlus />
+
+                <span className="bg-green-200 text-green-800 px-2 rounded-2xl cursor-pointer">
+                  +
+
                 </span>
               </div>
               <div className="p-4">
@@ -83,7 +90,11 @@ export default function ExploreMenu() {
                 <div className="flex justify-between items-center">
                   <p className="text-[#933C24] font-semibold">${item.price}</p>
                   <button
+
                     className="block bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
+
+                    className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
+
                     onClick={() => updateCounter(item.id)}
                   >
                     Add
