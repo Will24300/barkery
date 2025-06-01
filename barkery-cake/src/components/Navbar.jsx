@@ -13,7 +13,7 @@ export default function Navbar() {
   return (
     <>
       <nav
-        className="h-screen bg-no-repeat  mb-10 text-white px-20 py-5"
+        className="h-screen w-[100vw] bg-no-repeat  mb-10 text-white px-20 py-5"
         style={{ backgroundImage: `url(${bg})` }}
       >
         <div className="flex justify-between items-center">
