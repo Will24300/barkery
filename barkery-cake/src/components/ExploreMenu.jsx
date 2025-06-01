@@ -53,7 +53,7 @@ export default function ExploreMenu() {
               key={index}
             >
               <div
-                className="h-4/5 bg-center bg-cover rounded-t  "
+                className="h-4/5 bg-center bg-cover rounded-t  cursor-pointer hover:scale-102 duration-150"
                 style={{ backgroundImage: `url(${item.image})` }}
               ></div>
               <div

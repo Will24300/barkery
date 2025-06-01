@@ -21,8 +21,8 @@ export default function Products() {
                 alt={product.name}
                 className={
                   product.id === 2 || product.id === 3
-                    ? "w-[200px] mx-auto mb-4"
-                    : "w-[170px] mx-auto"
+                    ? "w-[200px] mx-auto mb-4 "
+                    : "w-[170px] mx-auto "
                 }
               />
               <div className="flex flex-col  items-start">
