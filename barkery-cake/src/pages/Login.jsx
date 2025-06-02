@@ -1,8 +1,8 @@
 import React, { useContext, useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import axiosInstance from "../axiosIntance";
 import Swal from "sweetalert2";
 import { UserContext } from "../context/HookContext";
+import axios from "axios";
 
 const Login = () => {
   const [errorLogin, seterrorLogin] = useState();
@@ -17,7 +17,7 @@ const Login = () => {
   const handleSubmit = (event) => {
     event.preventDefault();
 
-    axiosInstance
+    axios
       .post("/auth/login", values)
       .then((res) => {
         if (res.status === 200) {
