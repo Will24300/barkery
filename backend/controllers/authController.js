@@ -59,7 +59,7 @@ const signup = async (req, res) => {
         if (emailResult.length > 0) {
           return res.status(400).json({ error: "Email already registered" });
         }
-
+        
         // Insert new user
         const insertQuery = `
           INSERT INTO users (first_name, last_name, email, password, role) 
