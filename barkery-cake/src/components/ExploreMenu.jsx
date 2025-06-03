@@ -1,23 +1,17 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { data } from "../data/data";
 import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
 import bg2 from "../assets/bg2.png";
+import { UserContext } from "../../context/HookContext";
 
 export default function ExploreMenu() {
+  const { cartItems, addToCart, removeFromCart } = useContext(UserContext);
+
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
   const [isActiveIndex, setIsActiveIndex] = useState(0);
-  const [counters, setCounters] = useState({});
 
   const categorie = data.categories[isActiveIndex].products;
-
-  const updateCounter = (id) => {
-    setCounters((prev) => ({ ...prev, [id]: (prev[id] || 0) + 1 }));
-  };
-
-  const updateCounterDecrease = (id) => {
-    setCounters((prev) => ({ ...prev, [id]: prev[id] - 1 }));
-  };
 
   const handleToggle = (index) => {
     setIsActiveIndex(isActiveIndex === index ? 0 : index);
@@ -58,21 +52,21 @@ export default function ExploreMenu() {
               ></div>
               <div
                 className={
-                  counters[item.id] > 0
+                  cartItems[item.id] > 0
                     ? "w-[80px] rounded-2xl bg-white absolute top-[45%] left-2 p-1  flex justify-between items-center "
                     : "hidden"
                 }
               >
                 <span
-                  onClick={() => updateCounterDecrease(item.id)}
+                  onClick={() => removeFromCart(item.id)}
                   className="bg-red-300 text-red-600 text-[16px] p-1 rounded-2xl cursor-pointer"
                 >
                   <FiMinus />
                 </span>
-                <span className="px-1">{counters[item.id] || 0}</span>
+                <span className="px-1">{cartItems[item.id] || 0}</span>
 
                 <span
-                  onClick={() => updateCounter(item.id)}
+                  onClick={() => addToCart(item.id)}
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
                   <GoPlus />
@@ -87,7 +81,7 @@ export default function ExploreMenu() {
                   <p className="text-[#933C24] font-semibold">${item.price}</p>
                   <button
                     className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-                    onClick={() => updateCounter(item.id)}
+                    onClick={() => addToCart(item.id)}
                   >
                     Add
                   </button>
