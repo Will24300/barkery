@@ -25,7 +25,7 @@ const Signup = () => {
 
     try {
       const response = await axios.post(
-        "/auth/register-user",
+        "/auth/register",
         formData
       );
       // Notify on success
