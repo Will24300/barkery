@@ -62,12 +62,12 @@ const signup = async (req, res) => {
 
         // Insert new user
         const insertQuery = `
-          INSERT INTO users (first_name, last_name, email, password, role) 
-          VALUES (?, ?, ?, ?, ?)`;
+          INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
+          VALUES (?, ?, ?, ?, ?, ?)`;
 
         db.query(
           insertQuery,
-          [first_name, last_name, email, hashedPassword, role],
+          [first_name, last_name, phonenumber, email, hashedPassword, role],
           (err, result) => {
             if (err) {
               console.error("Error creating user:", err);
