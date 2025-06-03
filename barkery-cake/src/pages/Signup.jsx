@@ -24,7 +24,7 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-      const response = await axios.post("/auth/register-user", formData);
+      const response = await axios.post("/auth/register", formData);
       // Notify on success
       toast.success(response.data.message || "Registration successful!");
 
