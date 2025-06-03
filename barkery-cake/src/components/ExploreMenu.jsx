@@ -25,7 +25,7 @@ export default function ExploreMenu() {
 
   return (
     <>
-      <section id="explore" className="w-[85%] mx-auto my-20">
+      <section id="services" className="w-[85%] mx-auto my-20">
         <h2 className="text-[50px] font-sansita font-semibold text-center mb-10">
           Explore More
         </h2>
