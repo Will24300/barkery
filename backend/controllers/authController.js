@@ -28,9 +28,9 @@ const verifyAdmin = async (req, res) => {
 };
 
 const signup = async (req, res) => {
-  const { first_name, last_name, email, password } = req.body;
+  const { first_name, last_name, phonenumber, email, password } = req.body;
 
-  if (!first_name || !last_name || !email || !password) {
+  if (!first_name || !last_name || !phonenumber || !email || !password) {
     return res.status(400).json({ error: "All fields are required" });
   }
 
