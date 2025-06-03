@@ -1,8 +1,8 @@
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import axiosInstance from "../axiosIntance";
-import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
+import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const Signup = () => {
@@ -24,10 +24,7 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-      const response = await axiosInstance.post(
-        "/auth/register-user",
-        formData
-      );
+      const response = await axios.post("/auth/register-user", formData);
       // Notify on success
       toast.success(response.data.message || "Registration successful!");
 
