@@ -18,7 +18,7 @@ const Login = () => {
     event.preventDefault();
 
     axios
-      .post("/auth/login", values)
+      .post("/api/auth/login", values)
       .then((res) => {
         if (res.status === 200) {
           const { message, role } = res.data;
