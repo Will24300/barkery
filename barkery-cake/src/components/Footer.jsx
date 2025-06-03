@@ -9,7 +9,11 @@ import photo2 from "../assets/recent2.png";
 
 export default function Footer() {
   return (
-    <footer className="px-15 py-7" style={{ backgroundImage: `url(${bg})` }}>
+    <footer
+      id="contact"
+      className="px-15 py-7"
+      style={{ backgroundImage: `url(${bg})` }}
+    >
       <div className="flex justify-between items-center pb-8">
         <img
           src={logo}

@@ -3,7 +3,7 @@ import { featuredTreat } from "../data/data";
 export default function FeaturedTreats() {
   return (
     <>
-      <section className="w-[85%] mx-auto text-center mb-30">
+      <section id="blog" className="w-[85%] mx-auto text-center mb-30">
         <h2 className="font-sansita font-semibold text-[#111111] text-[35px] mb-15 mt-15">
           Top Products
         </h2>
