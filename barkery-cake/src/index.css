@@ -3,6 +3,10 @@
 
 @tailwind utilities;
 
+* {
+  scroll-behavior: smooth;
+}
+
 .font-sansita {
   font-family: "Sansita Swashed", system-ui, sans-serif;
 }
