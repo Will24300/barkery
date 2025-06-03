@@ -30,8 +30,6 @@ const Signup = () => {
         formData
       );
 
-      const response = await axios.post("/auth/register-user", formData);
-
       // Notify on success
       toast.success(response.data.message || "Registration successful!");
 
