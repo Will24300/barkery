@@ -11,6 +11,21 @@ const app = express();
 app.use(cookieParser());
 const saltRounds = 10; // Used for bcrypt hashing
 
+const verifyAdmin = async (req, res) => {
+  const checkSuperAdminQuery = "SELECT id FROM admin LIMIT 1";
+
+  db.query(checkSuperAdminQuery, (err, result) => {
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).json({ error: "Database error" });
+    }
+
+    if (result.length > 0) {
+      return res.json({ error: "Superadmin is already registered." });
+    }
+    res.json({ message: "No superadmin registered yet." });
+  });
+};
 
 const signup = async (req, res) => {
   const { first_name, last_name, email, password } = req.body;
@@ -44,7 +59,7 @@ const signup = async (req, res) => {
         if (emailResult.length > 0) {
           return res.status(400).json({ error: "Email already registered" });
         }
-        
+
         // Insert new user
         const insertQuery = `
           INSERT INTO users (first_name, last_name, email, password, role) 
@@ -158,4 +173,4 @@ const logout = async (req, res) => {
   }
 };
 
-export { signup, login, logout };
+export { verifyAdmin, signup, login, logout };

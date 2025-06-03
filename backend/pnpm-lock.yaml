@@ -29,6 +29,9 @@ importers:
       jsonwebtoken:
         specifier: ^9.0.2
         version: 9.0.2
+      merge-descriptors:
+        specifier: ^2.0.0
+        version: 2.0.0
       multer:
         specifier: ^2.0.0
         version: 2.0.0
