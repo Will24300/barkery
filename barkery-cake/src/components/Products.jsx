@@ -37,7 +37,7 @@ export default function Products() {
                     id="#explore"
                     className="bg-[#933C24] text-white px-4 py-1 rounded cursor-pointer"
                   >
-                    Check
+                    <a href="#services">Check</a>
                   </button>
                 </div>
               </div>

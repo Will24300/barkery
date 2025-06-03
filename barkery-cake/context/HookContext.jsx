@@ -8,7 +8,19 @@ const HookContextProvider = ({ children }) => {
   const [message, setMessage] = useState("");
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
+  const [cartItems, setCartItems] = useState([]);
+
+  const addToCart = (itemId) => {
+    if (!cartItems[itemId]) {
+      setCartItems((prev) => ({ ...prev, [itemId]: 1 }));
+    } else {
+      setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] + 1 }));
+    }
+  };
+  const removeFromCart = (itemId) => {
+    setCartItems((prev) => ({ ...prev, [itemId]: prev[itemId] - 1 }));
+  };
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -41,6 +53,10 @@ const HookContextProvider = ({ children }) => {
     setMessage,
     loading,
     setLoading,
+    cartItems,
+    setCartItems,
+    addToCart,
+    removeFromCart,
   };
 
   return (

@@ -139,7 +139,7 @@ export default function Navbar() {
             </h1>
             <div className="flex flex-wrap gap-3">
               <button className="bg-[#933C24] hover:bg-[#7a3220] font-semibold py-2 px-8 rounded cursor-pointer transition-colors">
-                Shop Now
+                <a href="#services">Shop Now</a>
               </button>
               <button className="text-[#E9BD8C] hover:text-[#d4a97d] bg-transparent font-semibold py-2 px-8 rounded cursor-pointer border border-[#E9BD8C] hover:border-[#d4a97d] transition-colors">
                 Learn More
