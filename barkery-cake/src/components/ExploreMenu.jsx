@@ -73,7 +73,15 @@ export default function ExploreMenu() {
                 </span>
               </div>
               <div className="p-4">
-                <h2 className="font-semibold mt-2 ">{item.name}</h2>
+                <div className="flex justify-between items-center">
+                  <h2 className="font-semibold mt-2 ">{item.name}</h2>
+                  <span
+                    onClick={() => addToCart(item.id)}
+                    className="bg-[#933C24] text-white rounded-full h-5 w-5 flex justify-center items-center pb-1 cursor-pointer"
+                  >
+                    +
+                  </span>
+                </div>
                 <p className="text-[13px] text-[#5D5D5D] my-2">
                   {item.description}
                 </p>
