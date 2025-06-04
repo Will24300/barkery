@@ -1,22 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import Sidebar from "./components/Sidebar";
 import { useUser } from "../../context/HookContext";
+import AdminMainBoard from "./components/Mainboard";
 
 const AdminDashboard = () => {
-  const { userDetails, logout } = useUser();
+  const { userDetails } = useUser();
   const [activeSection, setActiveSection] = useState("overview");
-  const navigate = useNavigate();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace("#", "") || "overview";
-      setActiveSection(hash);
-    };
-
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -33,73 +25,74 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar Navigation */}
-      <div className="w-64 bg-gray-800 text-white p-4">
-        <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
-        <nav>
-          <ul>
-            <li>
-              <NavLink
-                to="/admin/dashboard#overview"
-                className={({ isActive }) =>
-                  isActive ? "text-yellow-300" : "hover:text-yellow-300"
-                }
-              >
-                Overview
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/admin/dashboard#products"
-                className={({ isActive }) =>
-                  isActive ? "text-yellow-300" : "hover:text-yellow-300"
-                }
-              >
-                Products
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/admin/dashboard#orders"
-                className={({ isActive }) =>
-                  isActive ? "text-yellow-300" : "hover:text-yellow-300"
-                }
-              >
-                Orders
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                to="/admin/dashboard#users"
-                className={({ isActive }) =>
-                  isActive ? "text-yellow-300" : "hover:text-yellow-300"
-                }
-              >
-                Users
-              </NavLink>
-            </li>
-            <li>
-              <button
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
-                className="text-white hover:text-yellow-300 mt-4"
-              >
-                Logout
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </div>
-      {/* Main Content */}
-      <div className="flex-1 p-6">
-        <h1>
-          Welcome, {userDetails?.email} (Role: {userDetails?.role})
-        </h1>
+    <div className="flex min-h-screen relative overflow-hidden ">
+      {/* Mobile overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden "
+          onClick={toggleSidebar}
+        />
+      )}
+
+      {/* Burger Icon */}
+      <button
+        onClick={toggleSidebar}
+        className="absolute top-0 left-5 z-40 md:hidden bg-white cursor-pointer"
+      >
+        {sidebarOpen ? (
+          <svg
+            data-slot="icon"
+            className="h-8 w-8 text-yellow-900 font-semibold "
+            fill="none"
+            stroke-width="1.5"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M6 18 18 6M6 6l12 12"
+            ></path>
+          </svg>
+        ) : (
+          <svg
+            className="h-8 w-8 text-yellow-900"
+            data-slot="icon"
+            fill="none"
+            stroke-width="1.5"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+            xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+          >
+            <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
+            ></path>
+          </svg>
+        )}
+      </button>
+
+      {/* Sidebar */}
+      <Sidebar
+        isOpen={sidebarOpen}
+        setActiveSection={setActiveSection}
+        activeSection={activeSection}
+        closeSidebar={() => setSidebarOpen(false)}
+      />
+
+      {/* Main content */}
+      <main
+        className={`flex-1 transition-all duration-300 ease-in-out p-6 ${
+          sidebarOpen ? "md:ml-64" : ""
+        }`}
+      >
+        <AdminMainBoard />
         {renderSection()}
-      </div>
+      </main>
     </div>
   );
 };

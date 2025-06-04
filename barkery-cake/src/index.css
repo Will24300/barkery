@@ -25,3 +25,12 @@
     @apply w-[80px] rounded-2xl bg-white absolute top-[48%] left-2  flex justify-between items-center;
   }
 }
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: left;
+  }
+  50% {
+    background-position: right;
+  }
+}

@@ -45,7 +45,7 @@ const Signup = () => {
           Or Go back to {"<-"}{" "}
 
           <NavLink to="/" className="text-orange-500">
-            Home page fsgddsusdhsghsdghsdghsd
+            Home page 
 
           </NavLink>
         </div>
