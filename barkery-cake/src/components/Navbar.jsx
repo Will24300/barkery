@@ -3,12 +3,14 @@ import bg from "../assets/bg.png";
 import logo from "../assets/logo.png";
 import { FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
+import { useUser } from "../../context/HookContext";
 
 export default function Navbar() {
   const [active, setActive] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const menus = ["Home", "Blog", "Services", "Contact Us"];
+  const { getCartCount } = useUser();
 
   const handleToggle = (index) => {
     setActive(index);
@@ -90,9 +92,13 @@ export default function Navbar() {
 
           <div className="flex items-center gap-4 md:gap-6">
             <div className="px-2 py-1 relative">
-              <Link to={"/cart"}>
-                <FaShoppingCart className="text-2xl md:text-3xl cursor-pointer" />
-                <span className="bg-red-700 rounded h-[6px] w-[6px] absolute top-0 right-0"></span>
+              <Link to="/cart" className="relative">
+                <FaShoppingCart className="text-2xl" />
+                {getCartCount() > 0 && (
+                  <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                    {getCartCount()}
+                  </span>
+                )}
               </Link>
             </div>
             <div className="md:flex items-center justify-between gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-[#933C24] px-4 py-2 rounded">
