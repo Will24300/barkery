@@ -4,11 +4,13 @@ import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
 import bg2 from "../assets/bg2.png";
 import { useUser } from "../../context/HookContext";
+import { ToastContainer, toast } from "react-toastify";
 
 export default function ExploreMenu() {
-   const { addToCart, updateQuantity, removeFromCart, cartItems } = useUser();
+  const { addToCart, updateQuantity, removeFromCart, cartItems } = useUser();
   const [isActiveIndex, setIsActiveIndex] = useState(0);
   const [clickedItems, setClickedItems] = useState({});
+  const [localQuantities, setLocalQuantities] = useState({});
 
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
   const categorie = data.categories[isActiveIndex].products;
@@ -18,12 +20,60 @@ export default function ExploreMenu() {
   };
 
   const handleAddClick = (itemId) => {
-    addToCart(itemId);
     setClickedItems((prev) => ({ ...prev, [itemId]: true }));
+    setLocalQuantities((prev) => ({ ...prev, [itemId]: prev[itemId] || 1 }));
   };
 
+  const handlePlusClick = (itemId) => {
+    setLocalQuantities((prev) => ({
+      ...prev,
+      [itemId]: (prev[itemId] || 0) + 1,
+    }));
+  };
+
+  const handleMinusClick = (itemId) => {
+    setLocalQuantities((prev) => {
+      const currentQuantity = prev[itemId] || 0;
+      if (currentQuantity <= 1) {
+        return { ...prev, [itemId]: 0 };
+      }
+      return { ...prev, [itemId]: currentQuantity - 1 };
+    });
+    setClickedItems((prev) => {
+      const currentQuantity = localQuantities[itemId] || 0;
+      if (currentQuantity <= 1) {
+        return { ...prev, [itemId]: false };
+      }
+      return prev;
+    });
+  };
+
+  const handleAddToCart = (item) => {
+    const quantity = localQuantities[item.id] || 1;
+    const itemInCart = cartItems.find((cartItem) => cartItem.id === item.id);
+    if (itemInCart) {
+      updateQuantity(item.id, itemInCart.quantity + quantity);
+    } else {
+      addToCart({ ...item, quantity });
+      toast.success("Item added to cart!");
+    }
+  };
+ 
+
+ 
   return (
     <>
+    <ToastContainer
+    position="top-left"
+    autoClose={5000}
+    hideProgressBar={false}
+    newestOnTop={false}
+    closeOnClick
+    rtl={false}
+    pauseOnFocusLoss
+    draggable
+    pauseOnHover
+     />
       <section id="services" className="w-[85%] mx-auto my-20">
         <h2 className="text-[50px] font-sansita font-semibold text-center mb-10">
           Explore More
@@ -57,20 +107,20 @@ export default function ExploreMenu() {
               ></div>
               <div
                 className={
-                  cartItems[item.id] > 0
+                  clickedItems[item.id] && localQuantities[item.id] > 0
                     ? "w-[80px] rounded-2xl bg-white absolute top-[45%] left-2 p-1 flex justify-between items-center"
                     : "hidden"
                 }
               >
                 <span
-                  onClick={() => removeFromCart(item.id)}
+                  onClick={() => handleMinusClick(item.id)}
                   className="bg-red-300 text-red-600 text-[16px] p-1 rounded-2xl cursor-pointer"
                 >
                   <FiMinus />
                 </span>
-                <span className="px-1">{cartItems[item.id] || 0}</span>
+                <span className="px-1">{localQuantities[item.id] || 0}</span>
                 <span
-                  onClick={() => addToCart(item.id)}
+                  onClick={() => handlePlusClick(item.id)}
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
                   <GoPlus />
@@ -93,10 +143,10 @@ export default function ExploreMenu() {
                 </p>
                 <div className="flex justify-between items-center">
                   <p className="text-[#933C24] font-semibold">${item.price}</p>
-                  {clickedItems[item.id] && (
+                  {clickedItems[item.id] && localQuantities[item.id] > 0 && (
                     <button
                       className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-                      onClick={() => addToCart(item.id)}
+                      onClick={() => handleAddToCart(item)}
                     >
                       Add
                     </button>

@@ -1,23 +1,54 @@
 import { FaTrash, FaMinus, FaPlus } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/HookContext";
+import { ToastContainer, toast } from "react-toastify";
 
 const Cart = () => {
+  const navigate = useNavigate();
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useUser();
+
+  const scrollToServices = () => {
+    // Navigate to home page first
+    navigate("/");
+    // Then scroll to services after a small delay to ensure page is loaded
+    setTimeout(() => {
+      const servicesSection = document.getElementById("services");
+      if (servicesSection) {
+        const offset = 0; // Adjust this value if you need some offset from the top
+        const sectionPosition =
+          servicesSection.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: sectionPosition - offset,
+          behavior: "smooth",
+        });
+      }
+    }, 100);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8">
+      <ToastContainer
+      position="top-left"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+       />
       <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
 
       {cartItems.length === 0 ? (
         <div className="text-center py-12">
           <h2 className="text-2xl mb-4">Your cart is empty</h2>
-          <Link
-            to="/menu"
-            className="bg-[#933C24] text-white px-6 py-2 rounded hover:bg-[#7a3120] transition-colors"
+          <button
+            onClick={scrollToServices}
+            className="bg-[#933C24] text-white px-6 py-2 rounded hover:bg-[#7a3120] transition-colors cursor-pointer"
           >
             Continue Shopping
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -40,21 +71,30 @@ const Cart = () => {
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                    className="p-2 rounded-full hover:bg-gray-100"
+                    onClick={() => {
+                      updateQuantity(item.id, item.quantity - 1);
+                      toast.warning("Quantity decreased!");
+                    }}
+                    className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                   >
                     <FaMinus className="text-sm" />
                   </button>
                   <span className="mx-4">{item.quantity}</span>
                   <button
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    className="p-2 rounded-full hover:bg-gray-100"
+                    onClick={() => {
+                      updateQuantity(item.id, item.quantity + 1);
+                      toast.success("Quantity increased!");
+                    }}
+                    className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                   >
                     <FaPlus className="text-sm" />
                   </button>
                   <button
-                    onClick={() => removeFromCart(item.id)}
-                    className="ml-4 text-red-500 hover:text-red-700"
+                    onClick={() => {
+                      removeFromCart(item.id);
+                      toast.error("Item removed from cart!");
+                    }}
+                    className="ml-4 text-red-500 hover:text-red-700 cursor-pointer"
                   >
                     <FaTrash />
                   </button>
@@ -76,7 +116,7 @@ const Cart = () => {
                   <span>${(getCartTotal() || 0).toFixed(2)}</span>
                 </div>
               </div>
-              <button className="w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors">
+              <button className="w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer">
                 Proceed to Checkout
               </button>
             </div>
