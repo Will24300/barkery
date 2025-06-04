@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import axios from "axios";
-
+import { jwtDecode } from "jwt-decode";
 
 const UserContext = createContext();
 
@@ -11,9 +11,8 @@ const HookContextProvider = ({ children }) => {
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Cart state
+  // Cart state (unchanged)
   const [cartItems, setCartItems] = useState([]);
-
 
   useEffect(() => {
     const savedCart = localStorage.getItem("barkeryCart");
@@ -25,7 +24,6 @@ const HookContextProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("barkeryCart", JSON.stringify(cartItems));
   }, [cartItems]);
-
 
   const addToCart = (item) => {
     setCartItems((prevItems) => {
@@ -73,25 +71,64 @@ const HookContextProvider = ({ children }) => {
   };
 
   // Auth functions
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const response = await axios.get("/users");
-        if (response.data.results) {
-          setAuth(true);
-          setUserDetails(response.data.results);
-        } else {
-          setAuth(false);
-        }
-      } catch (error) {
-        setAuth(false);
-        setMessage("Failed to fetch user data.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const verifyToken = async () => {
+    const token = localStorage.getItem("authToken");
+    if (!token) {
+      setAuth(false);
+      setUserDetails(null);
+      setLoading(false);
+      return;
+    }
 
-    fetchUserData();
+    try {
+      const decoded = jwtDecode(token);
+      // Verify token with backend
+      const response = await axios.get("/api/auth/verify", {
+        headers: { Authorization: `Bearer ${token}` },
+        withCredentials: true, // Send cookies for verifyUser middleware
+      });
+
+      if (response.data.valid) {
+        setAuth(true);
+        setUserDetails({
+          id: decoded.id,
+          email: decoded.email,
+          role: decoded.role,
+        });
+      } else {
+        localStorage.removeItem("authToken");
+        setAuth(false);
+        setUserDetails(null);
+      }
+    } catch (error) {
+      console.error("Token verification error:", error);
+      localStorage.removeItem("authToken");
+      setAuth(false);
+      setUserDetails(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const logout = async () => {
+    try {
+      await axios.post("/api/auth/logout", {}, { withCredentials: true });
+      localStorage.removeItem("authToken");
+      setAuth(false);
+      setUserDetails(null);
+      setMessage("Logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+      setMessage("Failed to logout");
+    }
+  };
+
+  const checkPermission = (allowedRoles) => {
+    return userDetails && allowedRoles.includes(userDetails.role.toLowerCase());
+  };
+
+  useEffect(() => {
+    verifyToken();
   }, []);
 
   const contextData = {
@@ -104,8 +141,10 @@ const HookContextProvider = ({ children }) => {
     setMessage,
     loading,
     setLoading,
+    logout,
+    checkPermission,
 
-    // Cart
+    // Cart (unchanged)
     cartItems,
     setCartItems,
     addToCart,
