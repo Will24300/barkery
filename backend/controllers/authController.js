@@ -191,3 +191,4 @@ app.get("/api/delivery/data", verifyUser("delivery"), (req, res) => {
 });
 
 export { verifyAdmin, signup, login, verify, logout };
+
