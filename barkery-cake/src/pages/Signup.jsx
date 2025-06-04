@@ -24,7 +24,6 @@ const Signup = () => {
     e.preventDefault();
 
     try {
-
       const response = await axios.post("/api/auth/register", formData);
 
       // Notify on success
