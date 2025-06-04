@@ -6,12 +6,13 @@ import {
   Navigate,
   Outlet,
 } from "react-router-dom";
-import { useUser } from "./context/HookContext";
-import Mainpage from "./components/Mainpage";
-import Login from "./components/Login";
 import AdminDashboard from "../auth/admin/AdminDashboard";
 import DeliveryDashboard from "../auth/delivery/DeliveryDasboard";
 import NotAuthorized from "../auth/NotAuthorized";
+import { HookContextProvider, useUser } from "../context/HookContext";
+import Login from "./pages/Login";
+import Home from "./pages/Home";
+import Signup from "./pages/Signup";
 
 const ProtectedRoute = ({ allowedRoles }) => {
   const { userDetails, loading, checkPermission } = useUser();
@@ -29,30 +30,32 @@ const ProtectedRoute = ({ allowedRoles }) => {
 
 const App = () => {
   return (
-    <Router>
-      <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<Mainpage />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<div>Signup Page</div>} />
-        <Route
-          path="/forgot-password"
-          element={<div>Forgot Password Page</div>}
-        />
-        <Route path="/not-authorized" element={<NotAuthorized />} />
+    <HookContextProvider>
+      <Router>
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route
+            path="/forgot-password"
+            element={<div>Forgot Password Page</div>}
+          />
+          <Route path="/not-authorized" element={<NotAuthorized />} />
 
-        {/* Protected Routes */}
-        <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-          <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
-        </Route>
-        <Route element={<ProtectedRoute allowedRoles={["delivery"]} />}>
-          <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
-        </Route>
+          {/* Protected Routes */}
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["delivery"]} />}>
+            <Route path="/delivery/dashboard" element={<DeliveryDashboard />} />
+          </Route>
 
-        {/* Fallback Route */}
-        <Route path="*" element={<Navigate to="/not-authorized" replace />} />
-      </Routes>
-    </Router>
+          {/* Fallback Route */}
+          <Route path="*" element={<Navigate to="/not-authorized" replace />} />
+        </Routes>
+      </Router>
+    </HookContextProvider>
   );
 };
 

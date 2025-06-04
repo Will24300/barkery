@@ -22,6 +22,7 @@ const Login = () => {
 
       if (response.status === 200) {
         const { message, role, user, token } = response.data;
+        console.log("response.data", response.data);
 
         // Store token in localStorage for client-side session management
         localStorage.setItem("authToken", token);
