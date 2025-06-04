@@ -40,6 +40,7 @@ import "react-toastify/dist/ReactToastify.css";
         toast.error(errorMsg);
       }
     };
+  
 
     return (
       <div className="h-screen grid justify-center items-center relative">
