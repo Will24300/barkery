@@ -3,128 +3,117 @@ import express from "express";
 import db from "../configs/db.config.js";
 import jwt from "jsonwebtoken";
 import cookieParser from "cookie-parser";
-// import nodemailer from "nodemailer";
-// import crypto from "crypto";
-import roles from "../middlewares/roles.js";
+import verifyUser from "../middlewares/verifyUser.js";
 
 const app = express();
 app.use(cookieParser());
-const saltRounds = 10; // Used for bcrypt hashing
+const saltRounds = 10;
 
 const verifyAdmin = async (req, res) => {
-  const checkSuperAdminQuery = "SELECT id FROM admin LIMIT 1";
+  const checkSuperAdminQuery =
+    "SELECT id FROM users WHERE role = 'admin' LIMIT 1";
 
   db.query(checkSuperAdminQuery, (err, result) => {
     if (err) {
       console.error("Database error:", err);
-      return res.status(500).json({ error: "Database error" });
+      return res.status(500).json({ Error: "Database error" });
     }
 
     if (result.length > 0) {
-      return res.json({ error: "Superadmin is already registered." });
+      return res.json({ Error: "Admin is already registered." });
     }
-    res.json({ message: "No superadmin registered yet." });
+    res.json({ message: "No admin registered yet." });
   });
 };
 
 const signup = async (req, res) => {
-  const { first_name, last_name, email, password } = req.body;
+  const { first_name, last_name, phonenumber, email, password, role } =
+    req.body;
 
-  if (!first_name || !last_name || !email || !password) {
-    return res.status(400).json({ error: "All fields are required" });
+  if (!first_name || !last_name || !phonenumber || !email || !password) {
+    return res.status(400).json({ Error: "All fields are required" });
   }
 
-  try {
-    // First, check if any user exists
-    const checkUsersQuery = "SELECT COUNT(*) as count FROM users";
+  const validRoles = ["admin", "customer", "delivery"];
+  const userRole = validRoles.includes(role?.toLowerCase())
+    ? role.toLowerCase()
+    : "customer";
 
-    db.query(checkUsersQuery, async (err, result) => {
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+    // Check if email already exists
+    const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
+    db.query(checkEmailQuery, [email], (err, emailResult) => {
       if (err) {
         console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ Error: "Database error" });
       }
 
-      const isFirstUser = result[0].count === 0;
-      const role = isFirstUser ? "admin" : "customer";
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      if (emailResult.length > 0) {
+        return res.status(400).json({ Error: "Email already registered" });
+      }
 
-      // Check if email already exists
-      const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
-      db.query(checkEmailQuery, [email], (err, emailResult) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ error: "Database error" });
-        }
+      // Insert new user
+      const insertQuery = `
+        INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
+        VALUES (?, ?, ?, ?, ?, ?)`;
 
-        if (emailResult.length > 0) {
-          return res.status(400).json({ error: "Email already registered" });
-        }
-
-        // Insert new user
-        const insertQuery = `
-          INSERT INTO users (first_name, last_name, email, password, role) 
-          VALUES (?, ?, ?, ?, ?)`;
-
-        db.query(
-          insertQuery,
-          [first_name, last_name, email, hashedPassword, role],
-          (err, result) => {
-            if (err) {
-              console.error("Error creating user:", err);
-              return res
-                .status(500)
-                .json({ error: "Error creating user account" });
-            }
-            return res.status(201).json({
-              message: `User registered successfully as ${role}!`,
-              role: role,
-            });
+      db.query(
+        insertQuery,
+        [first_name, last_name, phonenumber, email, hashedPassword, userRole],
+        (err, result) => {
+          if (err) {
+            console.error("Error creating user:", err);
+            return res
+              .status(500)
+              .json({ Error: "Error creating user account" });
           }
-        );
-      });
+          return res.status(201).json({
+            message: `User registered successfully as ${userRole}!`,
+            role: userRole,
+          });
+        }
+      );
     });
   } catch (error) {
     console.error("Error during signup:", error);
     return res
       .status(500)
-      .json({ error: "Internal server error during signup" });
+      .json({ Error: "Internal server error during signup" });
   }
 };
 
 const login = async (req, res) => {
-  const { email, password, isAdmin } = req.body;
+  const { email, password } = req.body;
 
   if (!email || !password) {
-    return res.status(400).json({ error: "Email and password are required" });
+    return res.status(400).json({ Error: "Email and password are required" });
   }
 
   try {
-    // Determine which table to query based on isAdmin flag
-    const table = isAdmin ? "admin" : "users";
-    const role = isAdmin ? roles.ADMIN : roles.USER;
-
-    const query = `SELECT user_id, password FROM ${table} WHERE email = ?`;
+    const query = `SELECT user_id, first_name, last_name, email, password, role FROM users WHERE email = ?`;
 
     db.query(query, [email], async (err, results) => {
       if (err) {
         console.error("Database error:", err);
-        return res.status(500).json({ error: "Database error" });
+        return res.status(500).json({ Error: "Database error" });
       }
 
       if (results.length === 0) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ Error: "Invalid email or password" });
       }
 
       const user = results[0];
       const isMatch = await bcrypt.compare(password, user.password);
 
       if (!isMatch) {
-        return res.status(401).json({ error: "Invalid email or password" });
+        return res.status(401).json({ Error: "Invalid email or password" });
       }
 
       // Generate JWT token
       const token = jwt.sign(
-        { email, role, id: user.id },
+        { id: user.user_id, email: user.email, role: user.role },
         process.env.JWT_SECRET || "jwt-secret-key",
         { expiresIn: "1d" }
       );
@@ -138,13 +127,13 @@ const login = async (req, res) => {
         .status(200)
         .json({
           message: "Successfully logged in!",
-          role,
+          role: user.role,
           user: {
             id: user.user_id,
-            email,
+            email: user.email,
             firstName: user.first_name,
             lastName: user.last_name,
-            role,
+            role: user.role,
           },
           token,
         });
@@ -153,7 +142,25 @@ const login = async (req, res) => {
     console.error("Login error:", error);
     return res
       .status(500)
-      .json({ error: "Internal server error during login" });
+      .json({ Error: "Internal server error during login" });
+  }
+};
+
+const verify = async (req, res) => {
+  const token = req.cookies.token;
+
+  if (!token) {
+    return res.status(401).json({ valid: false, Error: "No token provided" });
+  }
+
+  try {
+    const decoded = jwt.verify(
+      token,
+      process.env.JWT_SECRET || "jwt-secret-key"
+    );
+    return res.status(200).json({ valid: true, user: decoded });
+  } catch (error) {
+    return res.status(401).json({ valid: false, Error: "Invalid token" });
   }
 };
 
@@ -169,8 +176,18 @@ const logout = async (req, res) => {
     console.error("Logout error:", err);
     return res
       .status(500)
-      .json({ error: "Failed to log out. Please try again." });
+      .json({ Error: "Failed to log out. Please try again." });
   }
 };
 
-export { verifyAdmin, signup, login, logout };
+// Example protected route for admin
+app.get("/api/admin/data", verifyUser("admin"), (req, res) => {
+  res.json({ message: "Admin data access granted", role: req.role });
+});
+
+// Example protected route for delivery
+app.get("/api/delivery/data", verifyUser("delivery"), (req, res) => {
+  res.json({ message: "Delivery data access granted", role: req.role });
+});
+
+export { verifyAdmin, signup, login, verify, logout };
