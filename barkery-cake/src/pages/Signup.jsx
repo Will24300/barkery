@@ -43,8 +43,10 @@ const Signup = () => {
       <div className="h-screen grid justify-center items-center relative">
         <div className="absolute top-7 left-2 text-white font-semibold">
           Or Go back to {"<-"}{" "}
-          <NavLink to="/" className="text-yellow-300 font-semibold">
-            Home page
+
+          <NavLink to="/" className="text-orange-500">
+            Home page fsgddsusdhsghsdghsdghsd
+
           </NavLink>
         </div>
         <div className="mt-8 px-2 ">
