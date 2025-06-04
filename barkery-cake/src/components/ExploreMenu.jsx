@@ -3,18 +3,23 @@ import { data } from "../data/data";
 import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
 import bg2 from "../assets/bg2.png";
-import { UserContext } from "../../context/HookContext";
+import { useUser } from "../../context/HookContext";
 
 export default function ExploreMenu() {
-  const { cartItems, addToCart, removeFromCart } = useContext(UserContext);
+   const { addToCart, updateQuantity, removeFromCart, cartItems } = useUser();
+  const [isActiveIndex, setIsActiveIndex] = useState(0);
+  const [clickedItems, setClickedItems] = useState({});
 
   const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
-  const [isActiveIndex, setIsActiveIndex] = useState(0);
-
   const categorie = data.categories[isActiveIndex].products;
 
   const handleToggle = (index) => {
     setIsActiveIndex(isActiveIndex === index ? 0 : index);
+  };
+
+  const handleAddClick = (itemId) => {
+    addToCart(itemId);
+    setClickedItems((prev) => ({ ...prev, [itemId]: true }));
   };
 
   return (
@@ -47,13 +52,13 @@ export default function ExploreMenu() {
               key={index}
             >
               <div
-                className="h-4/5 bg-center bg-cover rounded-t  cursor-pointer hover:scale-102 duration-150"
+                className="h-4/5 bg-center bg-cover rounded-t cursor-pointer hover:scale-102 duration-150"
                 style={{ backgroundImage: `url(${item.image})` }}
               ></div>
               <div
                 className={
                   cartItems[item.id] > 0
-                    ? "w-[80px] rounded-2xl bg-white absolute top-[45%] left-2 p-1  flex justify-between items-center "
+                    ? "w-[80px] rounded-2xl bg-white absolute top-[45%] left-2 p-1 flex justify-between items-center"
                     : "hidden"
                 }
               >
@@ -64,7 +69,6 @@ export default function ExploreMenu() {
                   <FiMinus />
                 </span>
                 <span className="px-1">{cartItems[item.id] || 0}</span>
-
                 <span
                   onClick={() => addToCart(item.id)}
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
@@ -74,25 +78,29 @@ export default function ExploreMenu() {
               </div>
               <div className="p-4">
                 <div className="flex justify-between items-center">
-                  <h2 className="font-semibold mt-2 ">{item.name}</h2>
-                  <span
-                    onClick={() => addToCart(item.id)}
-                    className="bg-[#933C24] text-white rounded-full h-5 w-5 flex justify-center items-center pb-1 cursor-pointer"
-                  >
-                    +
-                  </span>
+                  <h2 className="font-semibold mt-2">{item.name}</h2>
+                  {!clickedItems[item.id] && (
+                    <span
+                      onClick={() => handleAddClick(item.id)}
+                      className="bg-[#933C24] text-white rounded-full h-5 w-5 flex justify-center items-center pb-1 cursor-pointer"
+                    >
+                      +
+                    </span>
+                  )}
                 </div>
                 <p className="text-[13px] text-[#5D5D5D] my-2">
                   {item.description}
                 </p>
                 <div className="flex justify-between items-center">
                   <p className="text-[#933C24] font-semibold">${item.price}</p>
-                  <button
-                    className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-                    onClick={() => addToCart(item.id)}
-                  >
-                    Add
-                  </button>
+                  {clickedItems[item.id] && (
+                    <button
+                      className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
+                      onClick={() => addToCart(item.id)}
+                    >
+                      Add
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
@@ -111,7 +119,7 @@ export default function ExploreMenu() {
           Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum
           lorem. Morbi convallis.
         </p>
-        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer ">
+        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer">
           Read More
         </button>
       </div>
