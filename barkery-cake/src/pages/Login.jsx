@@ -24,7 +24,7 @@ const Login = () => {
         const { message, role, user, token } = response.data;
         console.log("response.data", response.data);
 
-        // Store token in localStorage for client-side session management
+        // Store token in localStorage
         localStorage.setItem("authToken", token);
 
         // Update context

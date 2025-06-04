@@ -1,6 +1,6 @@
 import React, { useState, useEffect, createContext, useContext } from "react";
 import axios from "axios";
-import { jwtDecode } from "jwt-decode";
+import jwtDecode from "jwt-decode";
 
 const UserContext = createContext();
 
@@ -82,10 +82,9 @@ const HookContextProvider = ({ children }) => {
 
     try {
       const decoded = jwtDecode(token);
-      // Verify token with backend
       const response = await axios.get("/api/auth/verify", {
         headers: { Authorization: `Bearer ${token}` },
-        withCredentials: true, // Send cookies for verifyUser middleware
+        withCredentials: true,
       });
 
       if (response.data.valid) {
@@ -93,7 +92,7 @@ const HookContextProvider = ({ children }) => {
         setUserDetails({
           id: decoded.id,
           email: decoded.email,
-          role: decoded.role,
+          role: decoded.role.toLowerCase(),
         });
       } else {
         localStorage.removeItem("authToken");
