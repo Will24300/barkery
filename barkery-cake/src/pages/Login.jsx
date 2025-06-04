@@ -1,58 +1,64 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
-import { UserContext } from "../../context/HookContext";
+import { useUser } from "../../context/HookContext";
 import axios from "axios";
 
 const Login = () => {
-  const [errorLogin, seterrorLogin] = useState();
+  const [errorLogin, setErrorLogin] = useState("");
   const [values, setValues] = useState({
     email: "",
     password: "",
   });
 
-  const { setAuth, setName } = useContext(UserContext); // Access context methods
+  const { setAuth, setUserDetails } = useUser();
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
-    axios
-      .post("/api/auth/login", values)
-      .then((res) => {
-        if (res.status === 200) {
-          const { message, role } = res.data;
+    try {
+      const response = await axios.post("/api/auth/login", values);
 
-          // Update context
-          setAuth(true); // Set user as authenticated
-          // setName(name); // Save the user's name globally
+      if (response.status === 200) {
+        const { message, role, user, token } = response.data;
 
-          Swal.fire({
-            title: "Success!",
-            text: message,
-            icon: "success",
-          });
+        // Store token in localStorage for client-side session management
+        localStorage.setItem("authToken", token);
 
-          // Navigate based on role
-          switch (role) {
-            case "admin":
-              navigate("/adminpage");
-              break;
-            case "user":
-              navigate("/");
-              break;
-            default:
-              navigate("/22");
-          }
-        } else {
-          seterrorLogin("Invalid email or password");
-          console.log(res.data.Error);
+        // Update context
+        setAuth(true);
+        setUserDetails({ ...user, role });
+
+        Swal.fire({
+          title: "Success!",
+          text: message,
+          icon: "success",
+        });
+
+        // Navigate based on role
+        switch (role.toLowerCase()) {
+          case "admin":
+            navigate("/admin/dashboard");
+            break;
+          case "customer":
+            navigate("/");
+            break;
+          case "delivery":
+            navigate("/delivery/dashboard");
+            break;
+          default:
+            navigate("/not-authorized");
         }
-      })
-      .catch((err) => {
-        console.log(err);
-        seterrorLogin("An error occurred during login");
-      });
+      } else {
+        setErrorLogin("Invalid email or password");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrorLogin(
+        err.response?.data?.Error || "An error occurred during login"
+      );
+    }
   };
 
   return (
@@ -72,9 +78,11 @@ const Login = () => {
             <div className="px-2">
               <div className="py-3 text-center">
                 <h1 className="text-xl font-medium">Login</h1>
-                <div className="bg-red-200 w-frame-width rounded m-auto">
-                  <h1>{errorLogin}</h1>
-                </div>
+                {errorLogin && (
+                  <div className="bg-red-200 w-frame-width rounded m-auto">
+                    <h1>{errorLogin}</h1>
+                  </div>
+                )}
               </div>
               <div className="px-2 mb-2">
                 <input
@@ -98,7 +106,7 @@ const Login = () => {
               </div>
               <div className="px-2 mb-1">
                 <button
-                  className="text-white rounded w-full duration-300 px-2 py-2 mt-6 border-white bg-gradient-to-r  bg-[#933C24] cursor-pointer hover:scale-105"
+                  className="text-white rounded w-full duration-300 px-2 py-2 mt-6 border-white bg-gradient-to-r bg-[#933C24] cursor-pointer hover:scale-105"
                   type="submit"
                 >
                   Sign in
