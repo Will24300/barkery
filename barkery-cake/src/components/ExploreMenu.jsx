@@ -58,27 +58,28 @@ export default function ExploreMenu() {
       toast.success("Item added to cart!");
     }
   };
- 
 
- 
   return (
     <>
-    <ToastContainer
-    position="top-left"
-    autoClose={5000}
-    hideProgressBar={false}
-    newestOnTop={false}
-    closeOnClick
-    rtl={false}
-    pauseOnFocusLoss
-    draggable
-    pauseOnHover
-     />
-      <section id="services" className="w-[85%] mx-auto my-20">
-        <h2 className="text-[50px] font-sansita font-semibold text-center mb-10">
+      <ToastContainer
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <section
+        id="services"
+        className="w-[90%] md:w-[85%] mx-auto my-10 md:my-20"
+      >
+        <h2 className="text-3xl sm:text-4xl md:text-[50px] font-sansita font-semibold text-center mb-6 md:mb-10">
           Explore More
         </h2>
-        <ul className="flex justify-center items-center gap-10">
+        <ul className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-10">
           {items.map((item, index) => (
             <li
               key={index}
@@ -159,17 +160,17 @@ export default function ExploreMenu() {
       </section>
 
       <div
-        className="h-[55vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
+        className="h-[50vh] sm:h-[55vh] bg-center bg-cover mb-12 md:mb-20 flex flex-col justify-center items-center px-4"
         style={{ backgroundImage: `url(${bg2})` }}
       >
-        <h2 className="text-[40px] font-sansita text-white w-[25%] text-center leading-13">
+        <h2 className="text-3xl sm:text-4xl md:text-[40px] font-sansita text-white w-full md:w-3/4 lg:w-[25%] text-center leading-snug">
           About us
         </h2>
-        <p className="text-[#B9B9B9] text-[17px] w-[25%] text-center my-5">
+        <p className="text-[#B9B9B9] text-sm sm:text-base md:text-[17px] w-full md:w-2/3 lg:w-[25%] text-center my-3 sm:my-4 md:my-5">
           Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibendum
           lorem. Morbi convallis.
         </p>
-        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer">
+        <button className="bg-[#933C24] text-white font-semibold py-2 px-6 sm:px-8 rounded cursor-pointer hover:bg-[#7a3120] transition-colors">
           Read More
         </button>
       </div>
