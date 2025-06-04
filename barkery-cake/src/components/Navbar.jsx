@@ -8,12 +8,24 @@ export default function Navbar() {
   const [active, setActive] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const menus = ["Home", "Blog", "Contact Us", "Services"];
+  const menus = ["Home", "Blog", "Services", "Contact Us"];
 
   const handleToggle = (index) => {
-    setActive(active === index ? null : index);
+    setActive(index);
     if (isMobile) {
       setIsOpen(false);
+    }
+
+    const sectionId = menus[index].toLowerCase().replace(/\s+/g, "-");
+    const section = document.getElementById(sectionId);
+    if (section) {
+      const offset = 0;
+      const sectionPosition =
+        section.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({
+        top: sectionPosition - offset,
+        behavior: "smooth",
+      });
     }
   };
 
@@ -36,9 +48,8 @@ export default function Navbar() {
   return (
     <>
       <nav
-
+        id="home"
         className="h-screen w-full mb-10 text-white px-5 md:px-20 md:py-5 bg-cover bg-center"
-
         style={{ backgroundImage: `url(${bg})` }}
       >
         <div className="flex justify-between items-center py-4">
@@ -61,24 +72,28 @@ export default function Navbar() {
             />
           </div>
 
-          <ul className="hidden md:flex justify-center gap-10 ">
+          <ul className="hidden md:flex justify-center gap-10">
             {menus.map((item, index) => (
-              <li
-                key={index}
-                onClick={() => handleToggle(index)}
-                className={
-                  active === index ? "list-style-active" : "list-style"
-                }
-              >
-                {item}
+              <li key={index}>
+                <a
+                  href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  onClick={() => handleToggle(index)}
+                  className={
+                    active === index ? "list-style-active" : "list-style"
+                  }
+                >
+                  {item}
+                </a>
               </li>
             ))}
           </ul>
 
           <div className="flex items-center gap-4 md:gap-6">
             <div className="px-2 py-1 relative">
-              <FaShoppingCart className="text-2xl md:text-3xl cursor-pointer" />
-              <span className="bg-red-700 rounded h-[6px] w-[6px] absolute top-0 right-0"></span>
+              <Link to={"/cart"}>
+                <FaShoppingCart className="text-2xl md:text-3xl cursor-pointer" />
+                <span className="bg-red-700 rounded h-[6px] w-[6px] absolute top-0 right-0"></span>
+              </Link>
             </div>
             <div className="md:flex items-center justify-between gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-[#933C24] px-4 py-2 rounded">
               <Link to="/login">
@@ -93,29 +108,32 @@ export default function Navbar() {
             isOpen ? "max-h-96" : "max-h-0"
           }`}
         >
-          <ul className="flex flex-col items-center gap-4 py-4 bg-[#933C24] ">
+          <ul className="flex flex-col items-center gap-4 py-4 bg-[#933C24]">
             {menus.map((item, index) => (
-              <li
-                key={index}
-                onClick={() => handleToggle(index)}
-                className={`text-lg py-2 px-4 cursor-pointer transition-colors ${
-                  active === index
-                    ? "text-[#E9BD8C] font-semibold"
-                    : "text-white hover:text-[#E9BD8C]"
-                }`}
-                style={{ opacity: 1 }}
-              >
-                {item}
+              <li key={index} className="text-lg py-2 px-4">
+                <a
+                  href={`#${item.toLowerCase().replace(/\s+/g, "-")}`}
+                  onClick={() => handleToggle(index)}
+                  className={`cursor-pointer transition-colors ${
+                    active === index
+                      ? "text-[#E9BD8C] font-semibold"
+                      : "text-Christian hover:text-[#E9BD8C]"
+                  }`}
+                  style={{ opacity: 1 }}
+                >
+                  {item}
+                </a>
               </li>
             ))}
           </ul>
         </div>
-        <div className="flex items-center justify-start mt-15 ">
-          <div className="">
+
+        <div className="flex items-center justify-start mt-15">
+          <div>
             <h2 className="text-[#E9BD8C] text-[24px] font-semibold">
               Delicious Cafe
             </h2>
-            <h1 className="text-[48px] md:text-[74px] font-sansita leading-tight md:leading-22   mb-6 md:mb-10">
+            <h1 className="text-[48px] md:text-[74px] font-sansita leading-tight md:leading-22 mb-6 md:mb-10">
               Sweet Treats,
               <br /> Perfect Eats
             </h1>

@@ -6,17 +6,25 @@ import Products from "../components/Products";
 import { useContext } from "react";
 import { UserContext } from "../../context/HookContext";
 
-
-
 export default function Home() {
   const { setAuth, setUserDetails } = useContext(UserContext);
   return (
     <>
-      <Navbar setAuth={setAuth} setUserDetails={setUserDetails} />
-      <Products />
-      <ExploreMenu />
-      <FeaturedTreats />
-      <Footer />
+      <div id="home">
+        <Navbar setAuth={setAuth} setUserDetails={setUserDetails} />
+      </div>
+      <div id="blog" className="min-h-screen">
+        <Products />
+      </div>
+      <div id="services" className="min-h-screen">
+        <ExploreMenu />
+      </div>
+      <div id="featured-treats" className="min-h-screen">
+        <FeaturedTreats />
+      </div>
+      <div id="contact-us">
+        <Footer />
+      </div>
     </>
   );
 }
