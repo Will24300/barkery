@@ -47,7 +47,7 @@ import "react-toastify/dist/ReactToastify.css";
         <div className="absolute top-7 left-2">
           Or Go back to {"<-"}{" "}
           <NavLink to="/" className="text-orange-500">
-            Home page
+            Home page fsgddsusdhsghsdghsdghsd
           </NavLink>
         </div>
         <div className="mt-8 px-2">
