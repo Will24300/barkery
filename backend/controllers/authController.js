@@ -180,15 +180,13 @@ const logout = async (req, res) => {
   }
 };
 
-// Example protected route for admin
+// Example protected routes
 app.get("/api/admin/data", verifyUser("admin"), (req, res) => {
   res.json({ message: "Admin data access granted", role: req.role });
 });
 
-// Example protected route for delivery
 app.get("/api/delivery/data", verifyUser("delivery"), (req, res) => {
   res.json({ message: "Delivery data access granted", role: req.role });
 });
 
 export { verifyAdmin, signup, login, verify, logout };
-

@@ -20,17 +20,17 @@ function verifyUser(...allowedRoles) {
 
       if (decoded.email && decoded.role) {
         // Check if the user's role is allowed
-        if (
-          !allowedRoles
-            .map((role) => role.toLowerCase())
-            .includes(decoded.role.toLowerCase())
-        ) {
+        const normalizedRole = decoded.role.toLowerCase();
+        const normalizedAllowedRoles = allowedRoles.map((role) =>
+          role.toLowerCase()
+        );
+        if (!normalizedAllowedRoles.includes(normalizedRole)) {
           return res.status(403).json({ Error: "Forbidden" });
         }
 
-        //Here i Attach email and role to the request object for further use
+        // Attach email and role to the request object
         req.email = decoded.email;
-        req.role = decoded.role;
+        req.role = normalizedRole;
 
         next();
       } else {
