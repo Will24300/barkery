@@ -37,7 +37,7 @@ export default function Products() {
                     id="#explore"
                     className="bg-[#933C24] text-white px-4 py-1 rounded cursor-pointer"
                   >
-                    Check
+                    <a href="#services">Check</a>
                   </button>
                 </div>
               </div>
@@ -46,16 +46,16 @@ export default function Products() {
         </div>
       </section>
       <div
-        className="h-[55vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
+        className="h-[55vh] md:h-[65vh] bg-center bg-cover mb-20 flex flex-col justify-center items-center"
         style={{ backgroundImage: `url(${bg1})` }}
       >
-        <h2 className="text-[40px] font-sansita text-[#933C24] w-[25%] text-center leading-13">
-          20% Off&nbsp; Your First Order
+        <h2 className="text-3xl md:text-4xl lg:text-[40px] font-sansita text-[#933C24] w-4/5 md:w-2/3 lg:w-[25%] text-center leading-tight">
+          20% Off Your First Order
         </h2>
-        <p className="text-[#5D5D5D] text-[17px] w-[25%] text-center my-5">
+        <p className="text-[#5D5D5D] text-base md:text-lg lg:text-[17px] w-4/5 md:w-1/2 lg:w-[25%] text-center my-4 md:my-5">
           Suspendisse ac rhoncus nisl, eu tempor urna. Curabitur vel bibenjgg.
         </p>
-        <button className="bg-[#933C24] text-white font-smibold py-2 px-8 rounded cursor-pointer ">
+        <button className="bg-[#933C24] text-white font-semibold py-2 px-6 md:px-8 rounded cursor-pointer hover:bg-[#7a3120] transition-colors">
           Learn More
         </button>
       </div>

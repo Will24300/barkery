@@ -27,12 +27,13 @@ const verifyAdmin = async (req, res) => {
 };
 
 const signup = async (req, res) => {
+
   const { first_name, last_name, phonenumber, email, password, role } =
     req.body;
 
   if (!first_name || !last_name || !phonenumber || !email || !password) {
     return res.status(400).json({ Error: "All fields are required" });
-  }
+
 
   const validRoles = ["admin", "customer", "delivery"];
   const userRole = validRoles.includes(role?.toLowerCase())
@@ -54,6 +55,7 @@ const signup = async (req, res) => {
         return res.status(400).json({ Error: "Email already registered" });
       }
 
+
       // Insert new user
       const insertQuery = `
         INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
@@ -68,6 +70,7 @@ const signup = async (req, res) => {
             return res
               .status(500)
               .json({ Error: "Error creating user account" });
+
           }
           return res.status(201).json({
             message: `User registered successfully as ${userRole}!`,
