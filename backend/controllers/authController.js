@@ -32,57 +32,58 @@ const signup = async (req, res) => {
 
   if (!first_name || !last_name || !phonenumber || !email || !password) {
     return res.status(400).json({ Error: "All fields are required" });
+  }
 
-    const validRoles = ["admin", "customer", "delivery"];
-    const userRole = validRoles.includes(role?.toLowerCase())
-      ? role.toLowerCase()
-      : "customer";
+  const validRoles = ["admin", "customer", "delivery"];
+  const userRole = validRoles.includes(role?.toLowerCase())
+    ? role.toLowerCase()
+    : "customer";
 
-    try {
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+  try {
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      // Check if email already exists
-      const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
-      db.query(checkEmailQuery, [email], (err, emailResult) => {
-        if (err) {
-          console.error("Database error:", err);
-          return res.status(500).json({ Error: "Database error" });
-        }
+    // Check if email already exists
+    const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
+    db.query(checkEmailQuery, [email], (err, emailResult) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ Error: "Database error" });
+      }
 
-        if (emailResult.length > 0) {
-          return res.status(400).json({ Error: "Email already registered" });
-        }
+      if (emailResult.length > 0) {
+        return res.status(400).json({ Error: "Email already registered" });
+      }
 
-        // Insert new user
-        const insertQuery = `
+      // Insert new user
+      const insertQuery = `
         INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
         VALUES (?, ?, ?, ?, ?, ?)`;
 
-        db.query(
-          insertQuery,
-          [first_name, last_name, phonenumber, email, hashedPassword, userRole],
-          (err, result) => {
-            if (err) {
-              console.error("Error creating user:", err);
-              return res
-                .status(500)
-                .json({ Error: "Error creating user account" });
-            }
-            return res.status(201).json({
-              message: `User registered successfully as ${userRole}!`,
-              role: userRole,
-            });
+      db.query(
+        insertQuery,
+        [first_name, last_name, phonenumber, email, hashedPassword, userRole],
+        (err, result) => {
+          if (err) {
+            console.error("Error creating user:", err);
+            return res
+              .status(500)
+              .json({ Error: "Error creating user account" });
           }
-        );
-      });
-    } catch (error) {
-      console.error("Error during signup:", error);
-      return res
-        .status(500)
-        .json({ Error: "Internal server error during signup" });
-    }
+          return res.status(201).json({
+            message: `User registered successfully as ${userRole}!`,
+            role: userRole,
+          });
+        }
+      );
+    });
+  } catch (error) {
+    console.error("Error during signup:", error);
+    return res
+      .status(500)
+      .json({ Error: "Internal server error during signup" });
   }
 };
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
