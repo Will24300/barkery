@@ -116,9 +116,9 @@ const Cart = () => {
                   <span>${(getCartTotal() || 0).toFixed(2)}</span>
                 </div>
               </div>
-              <button className="w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer">
+              <Link to="/checkout" className="w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer">
                 Proceed to Checkout
-              </button>
+              </Link>
             </div>
           </div>
         </div>
