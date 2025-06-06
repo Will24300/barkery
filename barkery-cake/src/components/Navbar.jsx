@@ -10,7 +10,9 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const menus = ["Home", "Blog", "Services", "Contact Us"];
-  const { getCartCount } = useUser();
+  const { getCartCount, userDetails } = useUser();
+
+  console.log("Here are user details", userDetails);
 
   const handleToggle = (index) => {
     setActive(index);
