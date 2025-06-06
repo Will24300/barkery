@@ -34,47 +34,61 @@ const signup = async (req, res) => {
     return res.status(400).json({ Error: "All fields are required" });
   }
 
-  const validRoles = ["admin", "customer", "delivery"];
-  const userRole = validRoles.includes(role?.toLowerCase())
-    ? role.toLowerCase()
-    : "customer";
-
   try {
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Check if email already exists
-    const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
-    db.query(checkEmailQuery, [email], (err, emailResult) => {
+    // Check if this is the first user
+    const checkUsersQuery = "SELECT user_id FROM users LIMIT 1";
+    db.query(checkUsersQuery, async (err, usersResult) => {
       if (err) {
         console.error("Database error:", err);
         return res.status(500).json({ Error: "Database error" });
       }
 
-      if (emailResult.length > 0) {
-        return res.status(400).json({ Error: "Email already registered" });
-      }
+      // If there are no users, this is the first user - make them admin
+      // Otherwise, use the provided role or default to 'customer'
+      const userRole =
+        usersResult.length === 0
+          ? "admin"
+          : role &&
+            ["admin", "customer", "delivery"].includes(role.toLowerCase())
+          ? role.toLowerCase()
+          : "customer";
 
-      // Insert new user
-      const insertQuery = `
-        INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
-        VALUES (?, ?, ?, ?, ?, ?)`;
+      const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-      db.query(
-        insertQuery,
-        [first_name, last_name, phonenumber, email, hashedPassword, userRole],
-        (err, result) => {
-          if (err) {
-            console.error("Error creating user:", err);
-            return res
-              .status(500)
-              .json({ Error: "Error creating user account" });
-          }
-          return res.status(201).json({
-            message: `User registered successfully as ${userRole}!`,
-            role: userRole,
-          });
+      // Check if email already exists
+      const checkEmailQuery = "SELECT user_id FROM users WHERE email = ?";
+      db.query(checkEmailQuery, [email], (err, emailResult) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res.status(500).json({ Error: "Database error" });
         }
-      );
+
+        if (emailResult.length > 0) {
+          return res.status(400).json({ Error: "Email already registered" });
+        }
+
+        // Insert new user
+        const insertQuery = `
+          INSERT INTO users (first_name, last_name, phonenumber, email, password, role) 
+          VALUES (?, ?, ?, ?, ?, ?)`;
+
+        db.query(
+          insertQuery,
+          [first_name, last_name, phonenumber, email, hashedPassword, userRole],
+          (err, result) => {
+            if (err) {
+              console.error("Error creating user:", err);
+              return res
+                .status(500)
+                .json({ Error: "Error creating user account" });
+            }
+            return res.status(201).json({
+              message: `User registered successfully as ${userRole}!`,
+              role: userRole,
+            });
+          }
+        );
+      });
     });
   } catch (error) {
     console.error("Error during signup:", error);
