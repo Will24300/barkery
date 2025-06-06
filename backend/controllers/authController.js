@@ -32,13 +32,27 @@ const signup = async (req, res) => {
 
   if (!first_name || !last_name || !phonenumber || !email || !password) {
     return res.status(400).json({ Error: "All fields are required" });
+  }
 
-    const validRoles = ["admin", "customer", "delivery"];
-    const userRole = validRoles.includes(role?.toLowerCase())
-      ? role.toLowerCase()
-      : "customer";
+  try {
+    // Check if this is the first user
+    const checkUsersQuery = "SELECT user_id FROM users LIMIT 1";
+    db.query(checkUsersQuery, async (err, usersResult) => {
+      if (err) {
+        console.error("Database error:", err);
+        return res.status(500).json({ Error: "Database error" });
+      }
 
-    try {
+      // If there are no users, this is the first user - make them admin
+      // Otherwise, use the provided role or default to 'customer'
+      const userRole =
+        usersResult.length === 0
+          ? "admin"
+          : role &&
+            ["admin", "customer", "delivery"].includes(role.toLowerCase())
+          ? role.toLowerCase()
+          : "customer";
+
       const hashedPassword = await bcrypt.hash(password, saltRounds);
 
       // Check if email already exists
@@ -75,14 +89,15 @@ const signup = async (req, res) => {
           }
         );
       });
-    } catch (error) {
-      console.error("Error during signup:", error);
-      return res
-        .status(500)
-        .json({ Error: "Internal server error during signup" });
-    }
+    });
+  } catch (error) {
+    console.error("Error during signup:", error);
+    return res
+      .status(500)
+      .json({ Error: "Internal server error during signup" });
   }
 };
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
