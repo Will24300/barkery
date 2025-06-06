@@ -103,7 +103,7 @@ export default function Navbar() {
                 )}
               </Link>
             </div>
-            {userDetails === null ? (
+            {userDetails ? (
               <div className="flex items-center gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-white border-[#513311] border-[2px] px-4 py-2 rounded text-[#513311]">
                 <span>Hi, {userDetails?.name}</span>
                 <span>
