@@ -13,22 +13,17 @@ const Checkout = () => {
     firstName: userDetails?.firstName || "",
     lastName: userDetails?.lastName || "",
     email: userDetails?.email || "",
-    phone: "",
+    phone: userDetails?.phone || "",
     address: "",
     paymentMethod: "cod",
   });
-  const [firstName, setFirstName] = useState(userDetails?.firstName || "");
-  const [lastName, setLastName] = useState(userDetails?.lastName || "");
-  const [email, setEmail] = useState(userDetails?.email || "");
-  const [phone, setPhone] = useState(userDetails?.phone || "");
-  const [address, setAddress] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+
   console.log("Here are user details: ", userDetails);
 
   const handleSubmit = async (e) => {
@@ -55,16 +50,18 @@ const Checkout = () => {
         total_amount: getCartTotal(),
         status: "pending",
         delivery_address: formData.address,
+        customer_email: formData.email, // Added for email confirmation
+        customer_name: `${formData.firstName} ${formData.lastName}`, // Added for email
         order_items: cartItems.map((item) => ({
           product_id: item.id,
           quantity: item.quantity,
           price_at_purchase: item.price,
           product_image_url: item.image,
+          product_name: item.name, // Added for email
         })),
       };
 
-      // Simulate API call to save order
-      // You'll need to replace this with your actual backend API endpoint
+      // API call to save order
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -164,8 +161,8 @@ const Checkout = () => {
                   </label>
                   <input
                     type="text"
-                    name="name"
-                    value={firstName}
+                    name="firstName"
+                    value={formData.firstName}
                     onChange={handleInputChange}
                     className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
@@ -178,7 +175,7 @@ const Checkout = () => {
                   <input
                     type="text"
                     name="lastName"
-                    value={lastName}
+                    value={formData.lastName}
                     onChange={handleInputChange}
                     className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
@@ -191,7 +188,7 @@ const Checkout = () => {
                   <input
                     type="email"
                     name="email"
-                    value={email}
+                    value={formData.email}
                     onChange={handleInputChange}
                     className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
@@ -204,7 +201,7 @@ const Checkout = () => {
                   <input
                     type="tel"
                     name="phone"
-                    value={phone}
+                    value={formData.phone}
                     onChange={handleInputChange}
                     className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
@@ -219,7 +216,7 @@ const Checkout = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
+                  className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none px-3 rounded-sm"
                   rows="4"
                   required
                 />
