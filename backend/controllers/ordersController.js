@@ -1,13 +1,81 @@
 import db from "../configs/db.config.js";
+import nodemailer from "nodemailer";
+
+const transporter = nodemailer.createTransport({
+  host: process.env.EMAIL_HOST,
+  port: process.env.EMAIL_PORT,
+  secure: false, // Use TLS
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS,
+  },
+});
+
+const sendOrderConfirmationEmail = async (
+  customerEmail,
+  customerName,
+  orderId,
+  orderItems,
+  totalAmount,
+  deliveryAddress
+) => {
+  const mailOptions = {
+    from: `"Barkery" <${process.env.EMAIL_USER}>`,
+    to: customerEmail,
+    subject: `Order Confirmation - Order #${orderId}`,
+    html: `
+      <h2>Thank You for Your Order, ${customerName}!</h2>
+      <p>Your order (ID: ${orderId}) has been successfully placed.</p>
+      <h3>Order Details</h3>
+      <ul>
+        ${orderItems
+          .map(
+            (item) => `
+              <li>
+                <img src="${item.product_image_url}" alt="${
+              item.product_name
+            }" style="width: 50px; height: 50px;" />
+                <strong>${item.product_name}</strong>: ${
+              item.quantity
+            } x $${item.price_at_purchase.toFixed(2)}
+              </li>
+            `
+          )
+          .join("")}
+      </ul>
+      <p><strong>Total Amount:</strong> $${totalAmount.toFixed(2)}</p>
+      <p><strong>Delivery Address:</strong> ${deliveryAddress}</p>
+      <p>You will receive another email when your order is shipped.</p>
+      <p>Thank you for shopping with Barkery!</p>
+    `,
+  };
+
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log(`Confirmation email sent to ${customerEmail}`);
+  } catch (error) {
+    console.error("Error sending email:", error);
+    throw new Error("Failed to send confirmation email");
+  }
+};
 
 const createOrder = async (req, res) => {
   try {
-    const { user_id, total_amount, delivery_address, order_items } = req.body;
+    const {
+      user_id,
+      total_amount,
+      delivery_address,
+      customer_email,
+      customer_name,
+      order_items,
+    } = req.body;
 
     // Validate input
     if (
       !total_amount ||
       !delivery_address ||
+      !customer_email ||
+      !customer_name ||
       !order_items ||
       !Array.isArray(order_items)
     ) {
@@ -54,35 +122,56 @@ const createOrder = async (req, res) => {
         ]);
 
         // Insert into order_items table
-        db.query(orderItemsQuery, [orderItemsData], (itemsErr, itemsResult) => {
-          if (itemsErr) {
-            db.rollback(() => {
-              return res
-                .status(500)
-                .json({ Error: "Inserting data error in order_items table" });
-            });
-          }
-
-          // Commit transaction
-          db.commit((commitErr) => {
-            if (commitErr) {
+        db.query(
+          orderItemsQuery,
+          [orderItemsData],
+          async (itemsErr, itemsResult) => {
+            if (itemsErr) {
               db.rollback(() => {
                 return res
                   .status(500)
-                  .json({ Error: "Failed to commit transaction" });
+                  .json({ Error: "Inserting data error in order_items table" });
               });
             }
 
-            // TODO: Implement email confirmation logic here
-            // You can use Nodemailer or an email service like SendGrid
-            // Example: sendOrderConfirmationEmail(user_email, orderId, order_items);
+            // Send confirmation email
+            try {
+              await sendOrderConfirmationEmail(
+                customer_email,
+                customer_name,
+                orderId,
+                order_items,
+                total_amount,
+                delivery_address
+              );
+            } catch (emailError) {
+              db.rollback(() => {
+                return res
+                  .status(500)
+                  .json({
+                    Error:
+                      "Order created but failed to send confirmation email",
+                  });
+              });
+            }
 
-            return res.status(200).json({
-              Status: "Success",
-              order_id: orderId,
+            // Commit transaction
+            db.commit((commitErr) => {
+              if (commitErr) {
+                db.rollback(() => {
+                  return res
+                    .status(500)
+                    .json({ Error: "Failed to commit transaction" });
+                });
+              }
+
+              return res.status(200).json({
+                Status: "Success",
+                order_id: orderId,
+              });
             });
-          });
-        });
+          }
+        );
       });
     });
   } catch (error) {
@@ -93,7 +182,7 @@ const createOrder = async (req, res) => {
 
 const getOrders = async (req, res) => {
   try {
-    const userId = req.user?.id; // Assuming you have middleware to extract user ID from token
+    const userId = req.user?.id;
     if (!userId) {
       return res.status(401).json({ Error: "Unauthorized" });
     }
@@ -121,7 +210,6 @@ const getOrders = async (req, res) => {
         if (error) {
           return reject(error);
         }
-        // Group order items by order
         const ordersMap = results.reduce((acc, row) => {
           if (!acc[row.order_id]) {
             acc[row.order_id] = {
