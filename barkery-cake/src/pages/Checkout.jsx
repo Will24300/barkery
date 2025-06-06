@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/HookContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -10,19 +10,26 @@ const Checkout = () => {
 
   // Initialize form state with userDetails if available
   const [formData, setFormData] = useState({
-    name: userDetails?.name || "",
+    firstName: userDetails?.firstName || "",
+    lastName: userDetails?.lastName || "",
     email: userDetails?.email || "",
     phone: "",
     address: "",
     paymentMethod: "cod",
   });
-
+  const [firstName, setFirstName] = useState(userDetails?.firstName || "");
+  const [lastName, setLastName] = useState(userDetails?.lastName || "");
+  const [email, setEmail] = useState(userDetails?.email || "");
+  const [phone, setPhone] = useState(userDetails?.phone || "");
+  const [address, setAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("cod");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
+  console.log("Here are user details: ", userDetails);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,7 +37,8 @@ const Checkout = () => {
 
     // Basic validation
     if (
-      !formData.name ||
+      !formData.firstName ||
+      !formData.lastName ||
       !formData.email ||
       !formData.phone ||
       !formData.address
@@ -105,7 +113,14 @@ const Checkout = () => {
         draggable
         pauseOnHover
       />
-      <h1 className="text-3xl font-bold mb-8">Checkout</h1>
+      <div className="flex items-center gap-4 py-2">
+        <h1 className="text-3xl font-bold">Checkout</h1>
+        <span>
+          <Link to="/cart" className="text-[#933C24] font-semibold">
+            Back to Cart
+          </Link>
+        </span>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Order Summary */}
@@ -145,14 +160,27 @@ const Checkout = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Name *
+                    First Name *
                   </label>
                   <input
                     type="text"
                     name="name"
-                    value={formData.name}
+                    value={firstName}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#933C24] focus:ring-[#933C24]"
+                    className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name *
+                  </label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={lastName}
+                    onChange={handleInputChange}
+                    className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -163,9 +191,9 @@ const Checkout = () => {
                   <input
                     type="email"
                     name="email"
-                    value={formData.email}
+                    value={email}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#933C24] focus:ring-[#933C24]"
+                    className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -176,9 +204,9 @@ const Checkout = () => {
                   <input
                     type="tel"
                     name="phone"
-                    value={formData.phone}
+                    value={phone}
                     onChange={handleInputChange}
-                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#933C24] focus:ring-[#933C24]"
+                    className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -191,7 +219,7 @@ const Checkout = () => {
                   name="address"
                   value={formData.address}
                   onChange={handleInputChange}
-                  className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-[#933C24] focus:ring-[#933C24]"
+                  className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                   rows="4"
                   required
                 />
