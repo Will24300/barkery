@@ -99,8 +99,8 @@ const createOrder = async (req, res) => {
 
       db.query(createOrderQuery, orderData, (orderErr, orderResult) => {
         if (orderErr) {
-          db.rollback(() => {
-            return res
+          return db.rollback(() => {
+            res
               .status(500)
               .json({ Error: "Inserting data error in orders table" });
           });
@@ -127,14 +127,14 @@ const createOrder = async (req, res) => {
           [orderItemsData],
           async (itemsErr, itemsResult) => {
             if (itemsErr) {
-              db.rollback(() => {
-                return res
+              return db.rollback(() => {
+                res
                   .status(500)
                   .json({ Error: "Inserting data error in order_items table" });
               });
             }
 
-            // Send confirmation email
+            // Send confirmation email (don't fail the order if email fails)
             try {
               await sendOrderConfirmationEmail(
                 customer_email,
@@ -145,27 +145,21 @@ const createOrder = async (req, res) => {
                 delivery_address
               );
             } catch (emailError) {
-              db.rollback(() => {
-                return res
-                  .status(500)
-                  .json({
-                    Error:
-                      "Order created but failed to send confirmation email",
-                  });
-              });
+              console.error("Email sending failed:", emailError);
+              // Continue with the order even if email fails
             }
 
             // Commit transaction
             db.commit((commitErr) => {
               if (commitErr) {
-                db.rollback(() => {
-                  return res
+                return db.rollback(() => {
+                  res
                     .status(500)
                     .json({ Error: "Failed to commit transaction" });
                 });
               }
 
-              return res.status(200).json({
+              return res.status(201).json({
                 Status: "Success",
                 order_id: orderId,
               });
@@ -176,7 +170,9 @@ const createOrder = async (req, res) => {
     });
   } catch (error) {
     console.error("Error creating order:", error);
-    res.status(500).json({ Error: "Server error" });
+    if (!res.headersSent) {
+      res.status(500).json({ Error: "Server error" });
+    }
   }
 };
 
