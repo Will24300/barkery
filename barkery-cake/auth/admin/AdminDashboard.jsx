@@ -1,28 +1,41 @@
-import React, { useState } from "react";
+import React, { useState , useEffect } from "react";
 import Sidebar from "./components/Sidebar";
 import { useUser } from "../../context/HookContext";
 import AdminMainBoard from "./components/Mainboard";
+import ProductsTab from "./components/ProductsTab";
+import OrdersTab from "./components/OrdersTab";
+import UsersTab from "./components/UsersTab";
+import NotAuthorized from "../NotAuthorized";
 
 const AdminDashboard = () => {
   const { userDetails } = useUser();
-  const [activeSection, setActiveSection] = useState("overview");
+  const [activeSection, setActiveSection] = useState("mainboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-
-  const renderSection = () => {
-    switch (activeSection) {
-      case "products":
-        return <div>Products Management</div>;
-      case "orders":
-        return <div>Orders Management</div>;
-      case "users":
-        return <div>Users Management</div>;
-      case "overview":
-      default:
-        return <div>Admin Overview</div>;
+  // Handle initial hash on component mount
+  useEffect(() => {
+    const hash = window.location.hash.replace("#", "");
+    if (hash) {
+      setActiveSection(hash);
     }
-  };
+  }, []);
+
+   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+   const closeSidebar = () => setSidebarOpen(false);
+
+   const renderSection = () => {
+     switch (activeSection) {
+       case "products":
+         return <ProductsTab />;
+       case "orders":
+         return <OrdersTab />;
+       case "users":
+         return <UsersTab />;
+       case "mainboard":
+       default:
+         return <AdminMainBoard />;
+     }
+   };
 
   return (
     <div className="flex min-h-screen relative overflow-hidden ">
@@ -90,7 +103,6 @@ const AdminDashboard = () => {
           sidebarOpen ? "md:ml-64" : ""
         }`}
       >
-        <AdminMainBoard />
         {renderSection()}
       </main>
     </div>
