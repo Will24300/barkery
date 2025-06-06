@@ -6,6 +6,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 // import orderRoutes from "./routes/orderRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
+import orderRoutes from "./routes/orderRoutes.js";
 import path from "path";
 import { fileURLToPath } from "url";
 import roles from "./middlewares/roles.js";
@@ -34,7 +35,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", verifyUser(roles.ADMIN), adminRoutes);
 app.use("/api/users", verifyUser(roles.USER), userRoutes);
 app.use("/api/products", productRoutes);
-// app.use("/api/orders", orderRoutes);
+app.use("/api/orders", orderRoutes);
 
 // Serve static files from the uploads folder
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
