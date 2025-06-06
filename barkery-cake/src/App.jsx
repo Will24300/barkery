@@ -21,9 +21,9 @@ const ProtectedRoute = ({ allowedRoles }) => {
     return <div>Loading...</div>;
   }
 
-  if (!userDetails || !checkPermission(allowedRoles)) {
-    return <Navigate to="/not-authorized" replace />;
-  }
+  // if (!userDetails || !checkPermission(allowedRoles)) {
+  //   return <Navigate to="/not-authorized" replace />;
+  // }
 
   return <Outlet />;
 };

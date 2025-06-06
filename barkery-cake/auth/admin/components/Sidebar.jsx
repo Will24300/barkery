@@ -11,16 +11,11 @@ export default function Sidebar({
   const navigate = useNavigate();
   const { logout } = useUser();
 
-  useEffect(() => {
-    const handleHashChange = () => {
-      const hash = window.location.hash.replace("#", "") || "overview";
-      setActiveSection(hash);
+    const handleNavClick = (section) => {
+      setActiveSection(section);
+      window.location.hash = section;
+      closeSidebar();
     };
-
-    handleHashChange();
-    window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
-  }, []);
 
   return (
     <aside
@@ -31,57 +26,59 @@ export default function Sidebar({
       <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
       <nav>
         <ul className="space-y-2">
-          <li className="py-2 pl-4 bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white">
-            <NavLink
-              to="/admin/dashboard#overview"
-              onClick={closeSidebar}
-              className={({ isActive }) =>
-                isActive ? "font-semibold" : "text-white"
-              }
+          <li className={`py-2 pl-4 cursor-pointer bg-gradient-to-r ${activeSection === "mainboard" ? "from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
+            <button
+              onClick={() => handleNavClick("mainboard")}
+              className={`w-full text-left cursor-pointer ${
+                activeSection === "mainboard"
+                  ? "text-white font-semibold"
+                  : ""
+              }`}
             >
-              Overview
-            </NavLink>
+              Mainboard
+            </button>
           </li>
-          <li className="py-2 pl-4">
-            <NavLink
-              to="/admin/dashboard#products"
-              onClick={closeSidebar}
-              className={({ isActive }) =>
-                isActive ? "text-yellow-800 font-semibold" : ""
-              }
+          <li className={`py-2 pl-4 cursor-pointer ${activeSection === "products" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
+            <button
+              onClick={() => handleNavClick("products")}
+              className={`w-full text-left cursor-pointer ${
+                activeSection === "products"
+                  ? "text-white font-semibold"
+                  : ""
+              }`}
             >
               Products
-            </NavLink>
+            </button>
           </li>
-          <li className="py-2 pl-4">
-            <NavLink
-              to="/admin/dashboard#orders"
-              onClick={closeSidebar}
-              className={({ isActive }) =>
-                isActive ? "text-yellow-800 font-semibold" : ""
-              }
+          <li className={`py-2 pl-4 cursor-pointer ${activeSection === "orders" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
+            <button
+              onClick={() => handleNavClick("orders")}
+              className={`w-full text-left cursor-pointer ${
+                activeSection === "orders"
+                  ? "text-white font-semibold"
+                  : ""
+              }`}
             >
               Orders
-            </NavLink>
+            </button>
           </li>
-          <li className="py-2 pl-4">
-            <NavLink
-              to="/admin/dashboard#users"
-              onClick={closeSidebar}
-              className={({ isActive }) =>
-                isActive ? "text-yellow-800 font-semibold" : ""
-              }
+          <li className={`py-2 pl-4 cursor-pointer ${activeSection === "users" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
+            <button
+              onClick={() => handleNavClick("users")}
+              className={`w-full text-left cursor-pointer ${
+                activeSection === "users" ? "text-white font-semibold" : ""
+              }`}
             >
               Users
-            </NavLink>
+            </button>
           </li>
-          <li className="pl-4 mt-4">
+          <li className={`pl-4 mt-4 cursor-pointer ${activeSection === "logout" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
             <button
               onClick={() => {
                 logout();
                 navigate("/login");
               }}
-              className="hover:text-yellow-300 cursor-pointer"
+              className="hover:text-yellow-300 cursor-pointer "
             >
               Logout
             </button>
