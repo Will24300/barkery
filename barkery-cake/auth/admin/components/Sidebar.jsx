@@ -38,6 +38,19 @@ export default function Sidebar({
               Mainboard
             </button>
           </li>
+
+          <li className={`py-2 pl-4 cursor-pointer ${activeSection === "categories" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
+            <button
+              onClick={() => handleNavClick("categories")}
+              className={`w-full text-left cursor-pointer ${
+                activeSection === "categories"
+                  ? "text-white font-semibold"
+                  : ""
+              }`}
+            >
+              Categories
+            </button>
+          </li>
           <li className={`py-2 pl-4 cursor-pointer ${activeSection === "products" ? "bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite] rounded cursor-pointer text-white" : "bg-white text-black"}`}>
             <button
               onClick={() => handleNavClick("products")}

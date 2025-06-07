@@ -6,6 +6,7 @@ import ProductsTab from "./components/ProductsTab";
 import OrdersTab from "./components/OrdersTab";
 import UsersTab from "./components/UsersTab";
 import NotAuthorized from "../NotAuthorized";
+import CategoriesTab from "./components/CategoriesTab";
 
 const AdminDashboard = () => {
   const { userDetails } = useUser();
@@ -25,6 +26,8 @@ const AdminDashboard = () => {
 
    const renderSection = () => {
      switch (activeSection) {
+       case "categories":
+         return <CategoriesTab />;
        case "products":
          return <ProductsTab />;
        case "orders":

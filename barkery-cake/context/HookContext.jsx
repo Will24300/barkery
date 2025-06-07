@@ -11,21 +11,45 @@ const HookContextProvider = ({ children }) => {
   const [userDetails, setUserDetails] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Cart and products state
+  // Data state
   const [cartItems, setCartItems] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [users, setUsers] = useState([]);
 
-  // Fetch products
+  // Fetch all data
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchData = async () => {
       try {
-        const response = await axios.get("/api/products");
-        setProducts(response.data.products);
+        const [categoriesRes, productsRes, ordersRes, usersRes] =
+          await Promise.all([
+            axios.get("/api/categories"),
+            axios.get("/api/products"),
+            axios.get("/api/orders", {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+              withCredentials: true,
+            }),
+            axios.get("/api/users", {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+              },
+              withCredentials: true,
+            }),
+          ]);
+        setCategories(categoriesRes.data.categories);
+        setProducts(productsRes.data.products);
+        setOrders(ordersRes.data.orders);
+        setUsers(usersRes.data.users);
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchProducts();
+    fetchData();
   }, []);
 
   // Load cart from localStorage
@@ -33,7 +57,6 @@ const HookContextProvider = ({ children }) => {
     const savedCart = localStorage.getItem("barkeryCart");
     if (savedCart) {
       const parsedCart = JSON.parse(savedCart);
-      // Validate cart items against products
       const validCartItems = parsedCart.filter((item) =>
         products.some((p) => p.product_id === item.id)
       );
@@ -146,7 +169,7 @@ const HookContextProvider = ({ children }) => {
 
   const logout = async () => {
     try {
-      await axios.post("http://localhost:8082/api/auth/logout", {}, { withCredentials: true });
+      await axios.post("/api/auth/logout", {}, { withCredentials: true });
       localStorage.removeItem("authToken");
       setAuth(false);
       setUserDetails(null);
@@ -183,7 +206,14 @@ const HookContextProvider = ({ children }) => {
     updateQuantity,
     getCartTotal,
     getCartCount,
+    categories,
+    setCategories,
     products,
+    setProducts,
+    orders,
+    setOrders,
+    users,
+    setUsers,
   };
 
   return (
