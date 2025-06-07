@@ -135,12 +135,33 @@ const Cart = () => {
                 </div>
               </div>
 
-              <Link
-                to="/checkout"
+              <button
+                onClick={checkPermission}
                 className="block w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer text-center"
               >
                 Proceed to Checkout
-              </Link>
+              </button>
+              <dialog id="my_modal_3" className="modal">
+                <div className="modal-box">
+                  <form method="dialog">
+                    <button className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2">
+                      ✕
+                    </button>
+                  </form>
+                  <h3 className="font-bold text-lg">Login Required</h3>
+                  <p className="py-4">Please log in to proceed to checkout.</p>
+                  <div className="modal-action">
+                    <form method="dialog" className="w-full">
+                      <button
+                        className="btn bg-[#933C24] text-white w-full"
+                        onClick={() => navigate("/login")}
+                      >
+                        Go to Login
+                      </button>
+                    </form>
+                  </div>
+                </div>
+              </dialog>
             </div>
           </div>
         </div>
