@@ -1,22 +1,47 @@
-import { useContext, useState } from "react";
-import { data } from "../data/data";
+import { useState, useEffect } from "react";
 import { GoPlus } from "react-icons/go";
 import { FiMinus } from "react-icons/fi";
 import bg2 from "../assets/bg2.png";
 import { useUser } from "../../context/HookContext";
 import { ToastContainer, toast } from "react-toastify";
+import axios from "axios";
 
 export default function ExploreMenu() {
-  const { addToCart, updateQuantity, removeFromCart, cartItems } = useUser();
+  const { addToCart, cartItems } = useUser();
   const [isActiveIndex, setIsActiveIndex] = useState(0);
   const [clickedItems, setClickedItems] = useState({});
   const [localQuantities, setLocalQuantities] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const items = ["Cake", "Muffins", "Croissant", "Bread", "Tart", "Favorite"];
-  const categorie = data.categories[isActiveIndex].products;
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [categoriesRes, productsRes] = await Promise.all([
+          axios.get("/api/categories"),
+          axios.get("/api/products"),
+        ]);
+        setCategories(categoriesRes.data.categories);
+        setProducts(productsRes.data.products);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        toast.error("Failed to load categories and products");
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, []);
+
+  const filteredProducts = categories.length
+    ? products.filter(
+        (product) => product.category_name === categories[isActiveIndex]?.name
+      )
+    : [];
 
   const handleToggle = (index) => {
-    setIsActiveIndex(isActiveIndex === index ? 0 : index);
+    setIsActiveIndex(index);
   };
 
   const handleAddClick = (itemId) => {
@@ -49,15 +74,27 @@ export default function ExploreMenu() {
   };
 
   const handleAddToCart = (item) => {
-    const quantity = localQuantities[item.id] || 1;
-    const itemInCart = cartItems.find((cartItem) => cartItem.id === item.id);
+    const quantity = localQuantities[item.product_id] || 1;
+    const itemInCart = cartItems.find(
+      (cartItem) => cartItem.id === item.product_id
+    );
     if (itemInCart) {
-      updateQuantity(item.id, itemInCart.quantity + quantity);
+      toast.warning("Item already in cart!");
     } else {
-      addToCart({ ...item, quantity });
+      addToCart({
+        id: item.product_id,
+        name: item.name,
+        price: item.total_price,
+        image: item.image_url,
+        quantity,
+      });
       toast.success("Item added to cart!");
     }
   };
+
+  if (loading) {
+    return <div className="text-center py-12">Loading...</div>;
+  }
 
   return (
     <>
@@ -80,9 +117,9 @@ export default function ExploreMenu() {
           Explore More
         </h2>
         <ul className="flex flex-wrap justify-center items-center gap-4 sm:gap-6 md:gap-10">
-          {items.map((item, index) => (
+          {categories.map((category, index) => (
             <li
-              key={index}
+              key={category.category_id}
               className={
                 isActiveIndex === index
                   ? "border-b-3 list-menu-style"
@@ -90,38 +127,41 @@ export default function ExploreMenu() {
               }
               onClick={() => handleToggle(index)}
             >
-              {item}
+              {category.name}
             </li>
           ))}
         </ul>
         <hr className="text-[#D9D9D9] mb-20" />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 place-items-center">
-          {categorie.map((item, index) => (
+          {filteredProducts.map((item) => (
             <div
               className="w-[250px] h-[350px] rounded-t flex flex-col shadow relative"
-              key={index}
+              key={item.product_id}
             >
               <div
                 className="h-4/5 bg-center bg-cover rounded-t cursor-pointer hover:scale-102 duration-150"
-                style={{ backgroundImage: `url(${item.image})` }}
+                style={{ backgroundImage: `url(${item.image_url})` }}
               ></div>
               <div
                 className={
-                  clickedItems[item.id] && localQuantities[item.id] > 0
+                  clickedItems[item.product_id] &&
+                  localQuantities[item.product_id] > 0
                     ? "w-[80px] rounded-2xl bg-white absolute top-[45%] left-2 p-1 flex justify-between items-center"
                     : "hidden"
                 }
               >
                 <span
-                  onClick={() => handleMinusClick(item.id)}
+                  onClick={() => handleMinusClick(item.product_id)}
                   className="bg-red-300 text-red-600 text-[16px] p-1 rounded-2xl cursor-pointer"
                 >
                   <FiMinus />
                 </span>
-                <span className="px-1">{localQuantities[item.id] || 0}</span>
+                <span className="px-1">
+                  {localQuantities[item.product_id] || 0}
+                </span>
                 <span
-                  onClick={() => handlePlusClick(item.id)}
+                  onClick={() => handlePlusClick(item.product_id)}
                   className="bg-green-200 text-green-800 p-1 rounded-2xl cursor-pointer"
                 >
                   <GoPlus />
@@ -130,9 +170,9 @@ export default function ExploreMenu() {
               <div className="p-4">
                 <div className="flex justify-between items-center">
                   <h2 className="font-semibold mt-2">{item.name}</h2>
-                  {!clickedItems[item.id] && (
+                  {!clickedItems[item.product_id] && (
                     <span
-                      onClick={() => handleAddClick(item.id)}
+                      onClick={() => handleAddClick(item.product_id)}
                       className="bg-[#933C24] text-white rounded-full h-5 w-5 flex justify-center items-center pb-1 cursor-pointer"
                     >
                       +
@@ -143,15 +183,18 @@ export default function ExploreMenu() {
                   {item.description}
                 </p>
                 <div className="flex justify-between items-center">
-                  <p className="text-[#933C24] font-semibold">${item.price}</p>
-                  {clickedItems[item.id] && localQuantities[item.id] > 0 && (
-                    <button
-                      className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
-                      onClick={() => handleAddToCart(item)}
-                    >
-                      Add
-                    </button>
-                  )}
+                  <p className="text-[#933C24] font-semibold">
+                    ${item.total_price.toFixed(2)}
+                  </p>
+                  {clickedItems[item.product_id] &&
+                    localQuantities[item.product_id] > 0 && (
+                      <button
+                        className="bg-[#933C24] text-white py-1 px-6 cursor-pointer rounded"
+                        onClick={() => handleAddToCart(item)}
+                      >
+                        Add
+                      </button>
+                    )}
                 </div>
               </div>
             </div>
