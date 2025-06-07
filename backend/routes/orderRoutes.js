@@ -1,14 +1,20 @@
 import express from "express";
-import { createOrder, getOrders } from "../controllers/ordersController.js";
-import verifyUser from "../middlewares/verifyUser.js"; // Use your existing middleware
+import {
+  createOrder,
+  getOrders,
+  getAllOrders,
+  updateOrder,
+  deleteOrder,
+} from "../controllers/ordersController.js";
+import verifyUser from "../middlewares/verifyUser.js";
 import roles from "../middlewares/roles.js";
 
 const router = express.Router();
 
-// Create a new order (no auth required for guest orders)
 router.post("/", createOrder);
-
-// Get user's orders (requires authentication)
 router.get("/", verifyUser(roles.USER), getOrders);
+router.get("/all", verifyUser(roles.ADMIN), getAllOrders);
+router.put("/:order_id", verifyUser(roles.ADMIN), updateOrder);
+router.delete("/:order_id", verifyUser(roles.ADMIN), deleteOrder);
 
 export default router;
