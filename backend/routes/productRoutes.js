@@ -7,8 +7,6 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/productsController.js";
-import verifyUser from "../middlewares/verifyUser.js";
-import roles from "../middlewares/roles.js";
 
 
 const storage = multer.diskStorage({
@@ -29,16 +27,16 @@ const router = express.Router();
 router.get("/", getProducts);
 router.post(
   "/add",
-  verifyUser(roles.ADMIN),
+ 
   upload.single("image"),
   addProduct
 );
 router.put(
   "/:product_id",
-  verifyUser(roles.ADMIN),
+ 
   upload.single("image"),
   updateProduct
 );
-router.delete("/:product_id", verifyUser(roles.ADMIN), deleteProduct);
+router.delete("/:product_id", deleteProduct);
 
 export default router;
