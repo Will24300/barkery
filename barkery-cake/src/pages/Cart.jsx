@@ -64,7 +64,7 @@ const Cart = () => {
                 className="flex flex-col md:flex-row items-center border-b border-gray-200 py-6"
               >
                 <img
-                  src={item.image}
+                  src={`http://localhost:8082/${item.image}`}
                   alt={item.name}
                   className="w-24 h-24 object-cover rounded-lg"
                 />
