@@ -144,7 +144,7 @@ const Checkout = () => {
           {cartItems.map((item) => (
             <div key={item.id} className="flex items-center mb-4">
               <img
-                src={`http://localhost:8082/${item.image}`}
+                src={`http://localhost:8082${item.image}`}
                 alt={item.name}
                 className="w-16 h-16 object-cover rounded-lg mr-4"
               />
