@@ -87,7 +87,7 @@ const Checkout = () => {
 
       // API call
       const response = await axios.post(
-        "/api/orders",
+        "http://localhost:8082/api/orders",
         orderData,
         {
           headers: {

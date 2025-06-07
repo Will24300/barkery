@@ -19,8 +19,8 @@ export default function ExploreMenu() {
     const fetchData = async () => {
       try {
         const [categoriesRes, productsRes] = await Promise.all([
-          axios.get("/api/categories"),
-          axios.get("/api/products"),
+          axios.get("http://localhost:8082/api/categories"),
+          axios.get("http://localhost:8082/api/products"),
         ]);
         setCategories(categoriesRes.data.categories);
         setProducts(productsRes.data.products);
