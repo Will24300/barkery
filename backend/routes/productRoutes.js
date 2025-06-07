@@ -6,7 +6,7 @@ import {
   getProducts,
   updateProduct,
   deleteProduct,
-} from "../controllers/productController.js";
+} from "../controllers/productsController.js";
 import verifyUser from "../middlewares/verifyUser.js";
 import roles from "../middlewares/roles.js";
 
