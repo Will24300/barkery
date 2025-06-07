@@ -5,7 +5,8 @@ import { useUser } from "../../../context/HookContext";
 
 
 const AdminMainBoard = () => {
-  const { categories, products, orders, users } = useUser();
+  
+  const { categories, products, orders, users, userDetails } = useUser();
   const [highlightedUserId, setHighlightedUserId] = useState(null);
   const tableRef = useRef(null);
 
