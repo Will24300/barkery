@@ -5,7 +5,13 @@ import { ToastContainer, toast } from "react-toastify";
 
 const Cart = () => {
   const navigate = useNavigate();
-  const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useUser();
+  const {
+    cartItems,
+    removeFromCart,
+    updateQuantity,
+    getCartTotal,
+    userDetails,
+  } = useUser();
 
   const scrollToServices = () => {
     navigate("/");
@@ -21,6 +27,13 @@ const Cart = () => {
         });
       }
     }, 100);
+  };
+  const checkPermission = () => {
+    if (userDetails) {
+      navigate("/checkout");
+    } else {
+      document.getElementById("my_modal_3").showModal();
+    }
   };
 
   return (
@@ -121,6 +134,7 @@ const Cart = () => {
                   <span>${(getCartTotal() || 0).toFixed(2)}</span>
                 </div>
               </div>
+
               <Link
                 to="/checkout"
                 className="block w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer text-center"
