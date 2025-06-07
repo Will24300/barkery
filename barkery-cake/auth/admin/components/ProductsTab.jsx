@@ -1,6 +1,8 @@
 import React from "react";
 import ManagementComponent from "./ManagementComponent";
-import { useUser } from "../../context/HookContext";
+import { useUser } from "../../../context/HookContext";
+
+
 
 const ProductsTab = () => {
   const { products, setProducts, categories } = useUser();
