@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import bg from "../assets/bg.png";
 import logo from "../assets/logo.png";
 import { FaShoppingCart, FaBars, FaTimes } from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/HookContext";
 
 export default function Navbar() {
@@ -13,6 +13,13 @@ export default function Navbar() {
   const { getCartCount, userDetails } = useUser();
 
   console.log("Here are user details", userDetails);
+
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    localStorage.removeItem("userDetails");
+    navigate("/login");
+  };
 
   const handleToggle = (index) => {
     setActive(index);
@@ -106,24 +113,41 @@ export default function Navbar() {
             {userDetails ? (
               <div className="flex items-center gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-white border-[#513311] border-[2px] px-4 py-2 rounded text-[#513311]">
                 <span>Hi, {userDetails?.firstName}</span>
-                <span>
-                  <svg
-                    data-slot="icon"
-                    fill="none"
-                    className="w-6 h-6"
-                    stroke-width="1.5"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                      d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
-                    ></path>
-                  </svg>
-                </span>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="Search"
+                    className="input input-bordered w-24 md:w-auto"
+                  />
+                  <div className="dropdown dropdown-end">
+                    <div
+                      tabIndex={0}
+                      role="button"
+                      className="btn btn-ghost btn-circle avatar"
+                    >
+                      <div className="w-10 rounded-full">
+                        <img
+                          alt="Tailwind CSS Navbar component"
+                          src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+                        />
+                      </div>
+                    </div>
+                    <ul
+                      tabIndex={0}
+                      className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                    >
+                      <li>
+                        <Link className="justify-between">
+                          Profile
+                          <span className="badge">Edit</span>
+                        </Link>
+                      </li>
+                      <li>
+                        <button onClick={handleLogout}>Logout</button>
+                      </li>
+                    </ul>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="md:flex items-center justify-between gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-[#933C24] px-4 py-2 rounded">
