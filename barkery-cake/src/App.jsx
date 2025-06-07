@@ -46,8 +46,6 @@ const App = () => {
           />
           <Route path="/not-authorized" element={<NotAuthorized />} />
 
-          <Route path="/checkout" element={<Checkout />} />
-
           {/* Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
