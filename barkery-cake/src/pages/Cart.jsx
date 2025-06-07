@@ -153,7 +153,7 @@ const Cart = () => {
                   <div className="modal-action">
                     <form method="dialog" className="w-full">
                       <button
-                        className="btn bg-[#933C24] text-white w-full"
+                        className="btn bg-[#933C24] text-white w-full cursor-pointer"
                         onClick={() => navigate("/login")}
                       >
                         Go to Login
