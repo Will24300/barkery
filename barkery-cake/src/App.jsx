@@ -15,6 +15,7 @@ import Home from "./pages/Home";
 import Signup from "./pages/Signup";
 import Cart from "./pages/Cart";
 import OrderConfirmation from "./pages/OrderConfirmation";
+import Checkout from "./pages/Checkout";
 
 const ProtectedRoute = ({ allowedRoles }) => {
   const { userDetails, loading, checkPermission } = useUser();
@@ -46,6 +47,7 @@ const App = () => {
           />
           <Route path="/not-authorized" element={<NotAuthorized />} />
           <Route path="/order-confirmation" element={<OrderConfirmation />} />
+          <Route path="/checkout" element={<Checkout />} />
 
           {/* Protected Routes */}
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
