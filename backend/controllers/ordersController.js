@@ -86,19 +86,11 @@ const sendOrderStatusUpdateEmail = async (
 
 const createOrder = async (req, res) => {
   try {
-    const {
-      user_id,
-      total_amount,
-      delivery_address,
-      customer_email,
-      customer_name,
-      order_items,
-    } = req.body;
+    const { user_id, total_amount, delivery_address, order_items } = req.body;
     if (
+      !user_id ||
       !total_amount ||
       !delivery_address ||
-      !customer_email ||
-      !customer_name ||
       !order_items ||
       !Array.isArray(order_items)
     ) {
@@ -117,8 +109,21 @@ const createOrder = async (req, res) => {
         return res.status(400).json({ error: "Invalid order item data" });
       }
     }
+    // Verify user exists and fetch email, name
+    const userQuery = `SELECT email, CONCAT(first_name, ' ', last_name) AS customer_name FROM users WHERE user_id = ?`;
+    const user = await new Promise((resolve, reject) => {
+      db.query(userQuery, [user_id], (err, results) => {
+        if (err) reject(err);
+        else resolve(results[0]);
+      });
+    });
+    if (!user) {
+      return res.status(400).json({ error: "Invalid user_id" });
+    }
+    const { email: customer_email, customer_name } = user;
+    // Verify products exist
     const productIds = order_items.map((item) => item.product_id);
-    const productCheckQuery = `SELECT product_id FROM products WHERE product_id IN (?)`;
+    const productCheckQuery = `SELECT product_id, name FROM products WHERE product_id IN (?)`;
     const products = await new Promise((resolve, reject) => {
       db.query(productCheckQuery, [productIds], (err, results) => {
         if (err) reject(err);
@@ -130,27 +135,33 @@ const createOrder = async (req, res) => {
       (id) => !existingProductIds.includes(id)
     );
     if (invalidProductIds.length > 0) {
-      return res.status(400).json({
-        error: `Invalid product IDs: ${invalidProductIds.join(", ")}`,
-      });
+      return res
+        .status(400)
+        .json({
+          error: `Invalid product IDs: ${invalidProductIds.join(", ")}`,
+        });
     }
+    // Map product names for email
+    const productNameMap = products.reduce((acc, p) => {
+      acc[p.product_id] = p.name;
+      return acc;
+    }, {});
+    const enrichedOrderItems = order_items.map((item) => ({
+      ...item,
+      product_name: productNameMap[item.product_id],
+    }));
     db.beginTransaction((err) => {
       if (err) {
         return res.status(500).json({ error: "Failed to start transaction" });
       }
       const createOrderQuery = `
-        INSERT INTO orders (user_id, total_amount, status, delivery_address, created_at, customer_email, customer_name)
-        VALUES (?, ?, 'pending', ?, NOW(), ?, ?)
+        INSERT INTO orders (user_id, total_amount, status, delivery_address, created_at)
+        VALUES (?, ?, 'pending', ?, NOW())
       `;
-      const orderData = [
-        user_id || null,
-        total_amount,
-        delivery_address,
-        customer_email,
-        customer_name,
-      ];
+      const orderData = [user_id, total_amount, delivery_address];
       db.query(createOrderQuery, orderData, (orderErr, orderResult) => {
         if (orderErr) {
+          console.error("Order insertion error:", orderErr);
           return db.rollback(() => {
             res
               .status(500)
@@ -159,7 +170,7 @@ const createOrder = async (req, res) => {
         }
         const orderId = orderResult.insertId;
         const orderItemsQuery = `
-          INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, product_image_url, product_name)
+          INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, product_image_url)
           VALUES ?
         `;
         const orderItemsData = order_items.map((item) => [
@@ -168,10 +179,10 @@ const createOrder = async (req, res) => {
           item.quantity,
           item.price_at_purchase,
           item.product_image_url,
-          item.product_name,
         ]);
         db.query(orderItemsQuery, [orderItemsData], async (itemsErr) => {
           if (itemsErr) {
+            console.error("Order items insertion error:", itemsErr);
             return db.rollback(() => {
               res
                 .status(500)
@@ -182,7 +193,7 @@ const createOrder = async (req, res) => {
             customer_email,
             customer_name,
             orderId,
-            order_items,
+            enrichedOrderItems,
             total_amount,
             delivery_address
           );
@@ -210,25 +221,26 @@ const getOrders = async (req, res) => {
   try {
     const userId = req.user_id; // Extracted from token
     const query = `
-         SELECT 
-                o.order_id,
-                o.user_id,
-                o.total_amount,
-                o.status,
-                o.delivery_address,
-                o.created_at,
-                u.email AS customer_email,
-                CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
-                oi.product_id,
-                oi.quantity,
-                oi.price_at_purchase,
-                oi.product_image_url,
-                oi.product_name
-            FROM orders o
-            JOIN users u ON o.user_id = u.user_id
-            LEFT JOIN order_items oi ON o.order_id = oi.order_id
-            WHERE o.user_id = ?
-            ORDER BY o.created_at DESC
+      SELECT 
+        o.order_id,
+        o.user_id,
+        o.total_amount,
+        o.status,
+        o.delivery_address,
+        o.created_at,
+        u.email AS customer_email,
+        CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
+        oi.product_id,
+        oi.quantity,
+        oi.price_at_purchase,
+        oi.product_image_url,
+        p.name AS product_name
+      FROM orders o
+      JOIN users u ON o.user_id = u.user_id
+      LEFT JOIN order_items oi ON o.order_id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.product_id
+      WHERE o.user_id = ?
+      ORDER BY o.created_at DESC
     `;
     const orders = await new Promise((resolve, reject) => {
       db.query(query, [userId], (err, results) => {
@@ -288,10 +300,11 @@ const getAllOrders = async (req, res) => {
         oi.quantity,
         oi.price_at_purchase,
         oi.product_image_url,
-        oi.product_name
+        p.name AS product_name
       FROM orders o
       JOIN users u ON o.user_id = u.user_id
       LEFT JOIN order_items oi ON o.order_id = oi.order_id
+      LEFT JOIN products p ON oi.product_id = p.product_id
       ORDER BY o.created_at DESC
     `;
     const orders = await new Promise((resolve, reject) => {
@@ -354,9 +367,10 @@ const updateOrder = async (req, res) => {
       return res.status(400).json({ error: "Invalid status value" });
     }
     const getOrderQuery = `
-      SELECT customer_email, customer_name
-      FROM orders
-      WHERE order_id = ?
+      SELECT u.email AS customer_email, CONCAT(u.first_name, ' ', u.last_name) AS customer_name
+      FROM orders o
+      JOIN users u ON o.user_id = u.user_id
+      WHERE o.order_id = ?
     `;
     const order = await new Promise((resolve, reject) => {
       db.query(getOrderQuery, [order_id], (err, results) => {
