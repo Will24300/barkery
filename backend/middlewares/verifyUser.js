@@ -18,23 +18,50 @@ function verifyUser(...allowedRoles) {
         return res.status(403).json({ Error: "Token is not valid" });
       }
 
-      if (decoded.email && decoded.role) {
-        // Check if the user's role is allowed
-        const normalizedRole = decoded.role.toLowerCase();
-        const normalizedAllowedRoles = allowedRoles.map((role) =>
-          role.toLowerCase()
-        );
-        if (!normalizedAllowedRoles.includes(normalizedRole)) {
-          return res.status(403).json({ Error: "Forbidden" });
+      // Check if decoded token has required fields
+      if (!decoded || !decoded.email || !decoded.role) {
+        console.error("Invalid token payload:", { decoded });
+        return res.status(403).json({
+          Error: "Invalid token: Missing required fields",
+          details: "Token must contain email and role",
+        });
+      }
+
+      try {
+        const userRole = decoded.role.toString().toLowerCase();
+
+        // If no roles are specified, allow access
+        if (!allowedRoles || allowedRoles.length === 0) {
+          req.email = decoded.email;
+          req.role = userRole;
+          req.user = { email: decoded.email, role: userRole };
+          return next();
         }
 
-        // Attach email and role to the request object
+        // Normalize roles for comparison
+        const normalizedAllowedRoles = allowedRoles
+          .filter((role) => role) // Filter out any undefined/null roles
+          .map((role) => role.toString().toLowerCase());
+
+        // Check if the user's role is in the allowed roles
+        if (!normalizedAllowedRoles.includes(userRole)) {
+          return res.status(403).json({
+            Error: "Forbidden",
+            details: `Role '${decoded.role}' is not authorized for this resource`,
+          });
+        }
+
+        // Attach user info to the request object
         req.email = decoded.email;
-        req.role = normalizedRole;
+        req.role = userRole;
+        req.user = { email: decoded.email, role: userRole };
 
         next();
-      } else {
-        return res.status(403).json({ Error: "Invalid token payload" });
+      } catch (error) {
+        console.error("Error processing token:", error);
+        return res.status(500).json({
+          Error: "Internal server error during authentication",
+        });
       }
     });
   };
