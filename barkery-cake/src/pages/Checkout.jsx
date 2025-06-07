@@ -87,7 +87,7 @@ const Checkout = () => {
           state: { orderId: result.order_id },
         });
       } else {
-        throw new Error("Failed to place order");
+        throw new Error("Failed to place order", response);
       }
     } catch (error) {
       console.error("Error placing order:", error);
