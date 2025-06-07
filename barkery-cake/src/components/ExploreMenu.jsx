@@ -141,7 +141,9 @@ export default function ExploreMenu() {
             >
               <div
                 className="h-4/5 bg-center bg-cover rounded-t cursor-pointer hover:scale-102 duration-150"
-                style={{ backgroundImage: `url(${item.image_url})` }}
+                style={{
+                  backgroundImage: `url(http://localhost:8082/${item.image_url})`,
+                }}
               ></div>
               <div
                 className={
