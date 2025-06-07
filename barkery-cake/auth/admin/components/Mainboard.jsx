@@ -1,100 +1,19 @@
 import React, { useState, useEffect, useRef } from "react";
 import { NavLink } from "react-router-dom";
+import { useUser } from "../../context/HookContext";
 
 const AdminMainBoard = () => {
+  const { categories, products, orders, users } = useUser();
   const [highlightedUserId, setHighlightedUserId] = useState(null);
-  const [summary, setSummary] = useState([]);
-  const [orders, setOrders] = useState([]);
   const tableRef = useRef(null);
 
-  // Mock data
-  useEffect(() => {
-    const mockSummary = [
-      {
-        user_id: 1,
-        first_name: "Alice",
-        last_name: "Smith",
-        total_orders: 3,
-        first_order_date: "2024-06-01T10:20:00Z",
-      },
-      {
-        user_id: 2,
-        first_name: "Bob",
-        last_name: "Johnson",
-        total_orders: 2,
-        first_order_date: "2024-06-02T11:15:00Z",
-      },
-    ];
-
-    const mockOrders = [
-      {
-        order_id: 101,
-        user_id: 1,
-        first_name: "Alice",
-        last_name: "Smith",
-        email: "alice@example.com",
-        order_date: "2024-06-01T10:20:00Z",
-        item_name: "Chocolate Cake",
-        quantity: 1,
-        total_price: 20.0,
-        total_amount: 20.0,
-      },
-      {
-        order_id: 102,
-        user_id: 1,
-        first_name: "Alice",
-        last_name: "Smith",
-        email: "alice@example.com",
-        order_date: "2024-06-02T09:10:00Z",
-        item_name: "Vanilla Cupcake",
-        quantity: 2,
-        total_price: 5.0,
-        total_amount: 10.0,
-      },
-      {
-        order_id: 201,
-        user_id: 2,
-        first_name: "Bob",
-        last_name: "Johnson",
-        email: "bob@example.com",
-        order_date: "2024-06-02T11:15:00Z",
-        item_name: "Red Velvet Cake",
-        quantity: 1,
-        total_price: 25.0,
-        total_amount: 25.0,
-      },
-    ];
-
-    setSummary(mockSummary);
-    setOrders(mockOrders);
-  }, []);
-
-  const handleHighlight = (userId) => {
-    setHighlightedUserId(userId);
-  };
-
-  const handleClickOutside = (e) => {
-    if (tableRef.current && !tableRef.current.contains(e.target)) {
-      setHighlightedUserId(null);
-    }
-  };
-
-  useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
-    };
-  }, []);
-
-  // Dashboard card data
   const dashboardCards = [
     {
       id: 1,
-      title: "Total Menus",
-      count: "120",
+      title: "Total Categories",
+      count: categories.length,
       icon: (
         <svg
-          data-slot="icon"
           className="w-12 m-auto"
           fill="none"
           strokeWidth="1.5"
@@ -113,12 +32,11 @@ const AdminMainBoard = () => {
     {
       id: 2,
       title: "Total Orders",
-      count: "20",
+      count: orders.length,
       icon: (
         <svg
-          data-slot="icon"
-          fill="none"
           className="w-12 m-auto"
+          fill="none"
           strokeWidth="1.5"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -134,11 +52,10 @@ const AdminMainBoard = () => {
     },
     {
       id: 3,
-      title: "Daily Clients",
-      count: "180",
+      title: "Total Users",
+      count: users.length,
       icon: (
         <svg
-          data-slot="icon"
           className="w-12 m-auto"
           fill="none"
           strokeWidth="1.5"
@@ -156,8 +73,49 @@ const AdminMainBoard = () => {
     },
   ];
 
-  // Dummy name (replace with actual if you have auth context)
-  const name = "Admin";
+  const handleHighlight = (userId) => {
+    setHighlightedUserId(userId);
+  };
+
+  const handleClickOutside = (e) => {
+    if (tableRef.current && !tableRef.current.contains(e.target)) {
+      setHighlightedUserId(null);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("click", handleClickOutside);
+    return () => {
+      document.removeEventListener("click", handleClickOutside);
+    };
+  }, []);
+
+  const summary = users.map((user) => ({
+    user_id: user.user_id,
+    first_name: user.first_name,
+    last_name: user.last_name,
+    total_orders: orders.filter((order) => order.user_id === user.user_id)
+      .length,
+    first_order_date: orders
+      .filter((order) => order.user_id === user.user_id)
+      .sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0]
+      ?.created_at,
+  }));
+
+  const orderDetails = orders.flatMap((order) =>
+    order.order_items.map((item) => ({
+      order_id: order.order_id,
+      user_id: order.user_id,
+      first_name: order.customer_name.split(" ")[0],
+      last_name: order.customer_name.split(" ").slice(1).join(" "),
+      email: order.customer_email,
+      order_date: order.created_at,
+      item_name: item.product_name,
+      quantity: item.quantity,
+      total_price: item.price_at_purchase,
+      total_amount: order.total_amount,
+    }))
+  );
 
   return (
     <div className="card bg-white dark:bg-black text-black dark:text-white shadow-xl p-4 sm:p-6">
@@ -167,7 +125,6 @@ const AdminMainBoard = () => {
         </header>
         <div className="flex items-center gap-2">
           <svg
-            data-slot="icon"
             className="w-6 h-6"
             fill="none"
             strokeWidth="1.5"
@@ -181,7 +138,9 @@ const AdminMainBoard = () => {
               d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"
             />
           </svg>
-          <span className="font-semibold">{name}</span>
+          <span className="font-semibold">
+            {userDetails?.firstName || "Admin"}
+          </span>
         </div>
       </div>
 
@@ -208,7 +167,7 @@ const AdminMainBoard = () => {
         {/* Users General Table */}
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-md p-4">
           <h2 className="text-lg font-semibold text-orange-500 mb-4">
-            Recent Orders
+            Recent Orders Summary
           </h2>
           <div className="block md:hidden space-y-4">
             {summary.length > 0 ? (
@@ -253,7 +212,9 @@ const AdminMainBoard = () => {
                         Last Order Date:
                       </span>
                       <span className="text-gray-600 dark:text-gray-300">
-                        {new Date(user.first_order_date).toLocaleString()}
+                        {user.first_order_date
+                          ? new Date(user.first_order_date).toLocaleString()
+                          : "N/A"}
                       </span>
                     </div>
                   </div>
@@ -303,7 +264,9 @@ const AdminMainBoard = () => {
                         {user.total_orders}
                       </td>
                       <td className="rounded-r-lg py-3 px-4 text-sm text-gray-600 dark:text-gray-300 font-medium">
-                        {new Date(user.first_order_date).toLocaleString()}
+                        {user.first_order_date
+                          ? new Date(user.first_order_date).toLocaleString()
+                          : "N/A"}
                       </td>
                     </tr>
                   ))
@@ -328,8 +291,8 @@ const AdminMainBoard = () => {
             Recent Orders Details
           </h2>
           <div className="block md:hidden space-y-4">
-            {orders.length > 0 ? (
-              orders.map((order) => (
+            {orderDetails.length > 0 ? (
+              orderDetails.map((order) => (
                 <div
                   key={order.order_id}
                   className={`p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 ${
@@ -435,8 +398,8 @@ const AdminMainBoard = () => {
                 </tr>
               </thead>
               <tbody>
-                {orders.length > 0 ? (
-                  orders.map((order) => (
+                {orderDetails.length > 0 ? (
+                  orderDetails.map((order) => (
                     <tr
                       key={order.order_id}
                       className={`bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-md ${
@@ -491,5 +454,3 @@ const AdminMainBoard = () => {
 };
 
 export default AdminMainBoard;
-
-// users
