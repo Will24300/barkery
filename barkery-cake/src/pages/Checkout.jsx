@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/HookContext";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import axios from "axios";
 
 const Checkout = () => {
   const { userDetails, cartItems, getCartTotal, setCartItems } = useUser();
@@ -24,7 +25,7 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  console.log("Here are user details: ", userDetails);
+  console.log("User details:", userDetails);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,52 +47,53 @@ const Checkout = () => {
     try {
       // Prepare order data
       const orderData = {
-        user_id: userDetails?.id || null, // Use null if not logged in
+        user_id: userDetails?.id || null,
         total_amount: getCartTotal(),
         status: "pending",
         delivery_address: formData.address,
-        customer_email: formData.email, // Added for email confirmation
-        customer_name: `${formData.firstName} ${formData.lastName}`, // Added for email
+        customer_email: formData.email,
+        customer_name: `${formData.firstName} ${formData.lastName}`,
         order_items: cartItems.map((item) => ({
           product_id: item.id,
           quantity: item.quantity,
           price_at_purchase: item.price,
           product_image_url: item.image,
-          product_name: item.name, // Added for email
+          product_name: item.name,
         })),
       };
 
       // API call to save order
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(userDetails && {
-            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          }),
-        },
-        body: JSON.stringify(orderData),
+      const response = await axios.post(
+        "/api/orders",
+        orderData,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            ...(userDetails && {
+              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            }),
+          },
+          withCredentials: true, // Include cookies if needed
+        }
+      );
+
+      // Clear cart
+      setCartItems([]);
+      localStorage.setItem("barkeryCart", JSON.stringify([]));
+
+      // Show success message
+      toast.success("Order placed successfully! Confirmation email sent.");
+
+      // Navigate to confirmation page
+      navigate("/order-confirmation", {
+        state: { orderId: response.data.order_id },
       });
-
-      if (response.ok) {
-        const result = await response.json();
-        // Clear cart
-        setCartItems([]);
-        localStorage.setItem("barkeryCart", JSON.stringify([]));
-
-        // Show success message
-        toast.success("Order placed successfully! Confirmation email sent.");
-
-        // Navigate to confirmation page
-        navigate("/order-confirmation", {
-          state: { orderId: result.order_id },
-        });
-      } else {
-        throw new Error("Failed to place order", response);
-      }
     } catch (error) {
       console.error("Error placing order:", error);
-      toast.error("Failed to place order. Please try again.");
+      toast.error(
+        error.response?.data?.Error ||
+          "Failed to place order. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
     }
