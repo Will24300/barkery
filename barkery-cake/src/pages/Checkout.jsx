@@ -6,10 +6,9 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const Checkout = () => {
-  const { userDetails, cartItems, getCartTotal, setCartItems } = useUser();
+  const { userDetails, cartItems, getCartTotal, setCartItems, products } = useUser();
   const navigate = useNavigate();
 
-  // Initialize form state with userDetails if available
   const [formData, setFormData] = useState({
     firstName: userDetails?.firstName || "",
     lastName: userDetails?.lastName || "",
@@ -25,13 +24,11 @@ const Checkout = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  console.log("User details:", userDetails);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    // Basic validation
+    // Basic form validation
     if (
       !formData.firstName ||
       !formData.lastName ||
@@ -40,6 +37,27 @@ const Checkout = () => {
       !formData.address
     ) {
       toast.error("Please fill in all required fields");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate cart items
+    if (cartItems.length === 0) {
+      toast.error("Your cart is empty");
+      setIsSubmitting(false);
+      return;
+    }
+
+    // Validate product IDs
+    const invalidItems = cartItems.filter(
+      (item) => !products.some((p) => p.product_id === item.id)
+    );
+    if (invalidItems.length > 0) {
+      toast.error(
+        `Invalid products in cart: ${invalidItems
+          .map((item) => item.name)
+          .join(", ")}`
+      );
       setIsSubmitting(false);
       return;
     }
@@ -53,16 +71,21 @@ const Checkout = () => {
         delivery_address: formData.address,
         customer_email: formData.email,
         customer_name: `${formData.firstName} ${formData.lastName}`,
-        order_items: cartItems.map((item) => ({
-          product_id: item.id,
-          quantity: item.quantity,
-          price_at_purchase: item.price,
-          product_image_url: item.image,
-          product_name: item.name,
-        })),
+        order_items: cartItems.map((item) => {
+          const product = products.find((p) => p.product_id === item.id);
+          return {
+            product_id: item.id,
+            quantity: item.quantity,
+            price_at_purchase: item.price,
+            product_image_url: product.image_url,
+            product_name: item.name,
+          };
+        }),
       };
 
-      // API call to save order
+      console.log("Sending order data:", orderData);
+
+      // API call
       const response = await axios.post(
         "/api/orders",
         orderData,
@@ -73,26 +96,20 @@ const Checkout = () => {
               Authorization: `Bearer ${localStorage.getItem("authToken")}`,
             }),
           },
-          withCredentials: true, // Include cookies if needed
+          withCredentials: true,
         }
       );
 
-      // Clear cart
       setCartItems([]);
       localStorage.setItem("barkeryCart", JSON.stringify([]));
-
-      // Show success message
       toast.success("Order placed successfully! Confirmation email sent.");
-
-      // Navigate to confirmation page
       navigate("/order-confirmation", {
         state: { orderId: response.data.order_id },
       });
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error(
-        error.response?.data?.Error ||
-          "Failed to place order. Please try again."
+        error.response?.data?.Error || "Failed to place order. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -122,7 +139,6 @@ const Checkout = () => {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Order Summary */}
         <div className="lg:col-span-1 bg-gray-50 p-6 rounded-lg h-fit">
           <h2 className="text-xl font-semibold mb-4">Order Summary</h2>
           {cartItems.map((item) => (
@@ -135,7 +151,7 @@ const Checkout = () => {
               <div>
                 <h3 className="text-sm font-semibold">{item.name}</h3>
                 <p className="text-gray-600">
-                  ${item.price.toFixed(2)} x {item.quantity}
+                  ${(item.price || 0).toFixed(2)} x {item.quantity}
                 </p>
               </div>
             </div>
@@ -148,14 +164,10 @@ const Checkout = () => {
           </div>
         </div>
 
-        {/* Checkout Form */}
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Customer Information */}
             <div className="bg-gray-50 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">
-                Customer Information
-              </h2>
+              <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -225,7 +237,6 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Payment Method */}
             <div className="bg-gray-50 p-6 rounded-lg">
               <h2 className="text-xl font-semibold mb-4">Payment Method</h2>
               <div className="space-y-4">
@@ -258,14 +269,11 @@ const Checkout = () => {
               </div>
             </div>
 
-            {/* Submit Button */}
             <button
               type="submit"
               disabled={isSubmitting}
               className={`w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors ${
-                isSubmitting
-                  ? "opacity-50 cursor-not-allowed"
-                  : "cursor-pointer"
+                isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
               }`}
             >
               {isSubmitting ? "Placing Order..." : "Place Order"}

@@ -8,13 +8,11 @@ const Cart = () => {
   const { cartItems, removeFromCart, updateQuantity, getCartTotal } = useUser();
 
   const scrollToServices = () => {
-    // Navigate to home page first
     navigate("/");
-    // Then scroll to services after a small delay to ensure page is loaded
     setTimeout(() => {
       const servicesSection = document.getElementById("services");
       if (servicesSection) {
-        const offset = 0; // Adjust this value if you need some offset from the top
+        const offset = 0;
         const sectionPosition =
           servicesSection.getBoundingClientRect().top + window.scrollY;
         window.scrollTo({
@@ -28,17 +26,24 @@ const Cart = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <ToastContainer
-      position="top-left"
-      autoClose={5000}
-      hideProgressBar={false}
-      newestOnTop={false}
-      closeOnClick
-      rtl={false}
-      pauseOnFocusLoss
-      draggable
-      pauseOnHover
-       />
-      <h1 className="text-3xl font-bold mb-8">Your Cart</h1>
+        position="top-left"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+      <div className="flex items-center gap-4 py-2">
+        <h1 className="text-3xl font-bold">Your Cart</h1>
+        <span>
+          <Link to="/" className="text-[#933C24] font-semibold">
+            Back to Home
+          </Link>
+        </span>
+      </div>
 
       {cartItems.length === 0 ? (
         <div className="text-center py-12">
@@ -66,7 +71,7 @@ const Cart = () => {
                 <div className="flex-1 px-4">
                   <h3 className="text-lg font-semibold">{item.name}</h3>
                   <p className="text-gray-600">
-                    ${item?.price?.toFixed?.(2) || "0.00"}
+                    ${(item.price || 0).toFixed(2)}
                   </p>
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
@@ -116,7 +121,10 @@ const Cart = () => {
                   <span>${(getCartTotal() || 0).toFixed(2)}</span>
                 </div>
               </div>
-              <Link to="/checkout" className="w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer">
+              <Link
+                to="/checkout"
+                className="block w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors cursor-pointer text-center"
+              >
                 Proceed to Checkout
               </Link>
             </div>
