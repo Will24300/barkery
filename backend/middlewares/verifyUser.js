@@ -18,23 +18,40 @@ function verifyUser(...allowedRoles) {
         return res.status(403).json({ Error: "Token is not valid" });
       }
 
-      if (decoded.email && decoded.role) {
+      // Check if decoded token has required fields
+      if (!decoded || !decoded.email || !decoded.role) {
+        console.error("Invalid token payload:", { decoded });
+        return res.status(403).json({
+          Error: "Invalid token: Missing required fields",
+          details: "Token must contain email and role",
+        });
+      }
+
+      try {
         // Check if the user's role is allowed
-        const normalizedRole = decoded.role.toLowerCase();
+        const normalizedRole = decoded.role.toString().toLowerCase();
         const normalizedAllowedRoles = allowedRoles.map((role) =>
-          role.toLowerCase()
+          role.toString().toLowerCase()
         );
+
         if (!normalizedAllowedRoles.includes(normalizedRole)) {
-          return res.status(403).json({ Error: "Forbidden" });
+          return res.status(403).json({
+            Error: "Forbidden",
+            details: `Role '${decoded.role}' is not authorized for this resource`,
+          });
         }
 
-        // Attach email and role to the request object
+        // Attach user info to the request object
         req.email = decoded.email;
         req.role = normalizedRole;
+        req.user = { email: decoded.email, role: normalizedRole };
 
         next();
-      } else {
-        return res.status(403).json({ Error: "Invalid token payload" });
+      } catch (error) {
+        console.error("Error processing token:", error);
+        return res.status(500).json({
+          Error: "Internal server error during authentication",
+        });
       }
     });
   };
