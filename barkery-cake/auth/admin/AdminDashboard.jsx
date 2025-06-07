@@ -1,12 +1,12 @@
 import React, { useState , useEffect } from "react";
 import Sidebar from "./components/Sidebar";
-import { useUser } from "../../context/HookContext";
 import AdminMainBoard from "./components/Mainboard";
 import ProductsTab from "./components/ProductsTab";
 import OrdersTab from "./components/OrdersTab";
 import UsersTab from "./components/UsersTab";
 import NotAuthorized from "../NotAuthorized";
 import CategoriesTab from "./components/CategoriesTab";
+import { useUser } from "../../context/HookContext";
 
 const AdminDashboard = () => {
   const { userDetails } = useUser();
