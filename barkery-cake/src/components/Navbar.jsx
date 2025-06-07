@@ -114,11 +114,7 @@ export default function Navbar() {
               <div className="flex items-center gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-white border-[#513311] border-[2px] px-4 py-2 rounded text-[#513311]">
                 <span>Hi, {userDetails?.firstName}</span>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    placeholder="Search"
-                    className="input input-bordered w-24 md:w-auto"
-                  />
+            
                   <div className="dropdown dropdown-end">
                     <div
                       tabIndex={0}
