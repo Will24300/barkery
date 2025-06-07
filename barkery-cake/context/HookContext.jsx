@@ -26,13 +26,13 @@ const HookContextProvider = ({ children }) => {
           await Promise.all([
             axios.get("/api/categories"),
             axios.get("/api/products"),
-            axios.get("/api/orders", {
+            axios.get("/api/orders/all", {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("authToken")}`,
               },
               withCredentials: true,
             }),
-            axios.get("/api/users", {
+            axios.get("/api/users/all", {
               headers: {
                 Authorization: `Bearer ${localStorage.getItem("authToken")}`,
               },
