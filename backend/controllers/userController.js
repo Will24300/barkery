@@ -3,7 +3,7 @@ import db from "../configs/db.config.js";
 const getUserData = async (req, res) => {
   try {
     const email = req.email; // Extracted from token
-    const query = `SELECT user_id, first_name, last_name, email, phone, role FROM users WHERE email = ?`;
+    const query = `SELECT user_id, first_name, last_name, email, phonenumber, role FROM users WHERE email = ?`;
     db.query(query, [email], (err, results) => {
       if (err) {
         console.error("Database error:", err);
@@ -24,7 +24,7 @@ const getUserData = async (req, res) => {
 
 const getAllUsers = async (req, res) => {
   try {
-    const query = `SELECT user_id, first_name, last_name, email, phone, role FROM users`;
+    const query = `SELECT user_id, first_name, last_name, email, phonenumber, role FROM users`;
     const users = await new Promise((resolve, reject) => {
       db.query(query, (err, results) => {
         if (err) reject(err);
@@ -44,8 +44,8 @@ const getAllUsers = async (req, res) => {
 const updateUser = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const { first_name, last_name, email, phone, role } = req.body;
-    if (!first_name || !last_name || !email || !role) {
+    const { first_name, last_name, email, phonenumber, role } = req.body;
+    if (!first_name || !last_name || !email || !phonenumber || !role) {
       return res
         .status(400)
         .json({ error: "First name, last name, email, and role are required" });
@@ -56,12 +56,12 @@ const updateUser = async (req, res) => {
     }
     const updateQuery = `
       UPDATE users 
-      SET first_name = ?, last_name = ?, email = ?, phone = ?, role = ?
+      SET first_name = ?, last_name = ?, email = ?, phonenumber = ?, role = ?
       WHERE user_id = ?
     `;
     db.query(
       updateQuery,
-      [first_name, last_name, email, phone, role, user_id],
+      [first_name, last_name, email, phonenumber, role, user_id],
       (err, result) => {
         if (err) {
           console.error("Database error:", err);
