@@ -212,24 +212,25 @@ const getOrders = async (req, res) => {
   try {
     const userId = req.user_id; // Extracted from token
     const query = `
-      SELECT 
-        o.order_id,
-        o.user_id,
-        o.total_amount,
-        o.status,
-        o.delivery_address,
-        o.created_at,
-        o.customer_email,
-        o.customer_name,
-        oi.product_id,
-        oi.quantity,
-        oi.price_at_purchase,
-        oi.product_image_url,
-        oi.product_name
-      FROM orders o
-      LEFT JOIN order_items oi ON o.order_id = oi.order_id
-      WHERE o.user_id = ?
-      ORDER BY o.created_at DESC
+         SELECT 
+                o.order_id,
+                o.user_id,
+                o.total_amount,
+                o.status,
+                o.delivery_address,
+                o.created_at,
+                u.email AS customer_email,
+                CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
+                oi.product_id,
+                oi.quantity,
+                oi.price_at_purchase,
+                oi.product_image_url,
+                oi.product_name,
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            WHERE o.user_id = ?
+            ORDER BY o.created_at DESC
     `;
     const orders = await new Promise((resolve, reject) => {
       db.query(query, [userId], (err, results) => {
@@ -277,22 +278,23 @@ const getAllOrders = async (req, res) => {
   try {
     const query = `
       SELECT 
-        o.order_id,
-        o.user_id,
-        o.total_amount,
-        o.status,
-        o.delivery_address,
-        o.created_at,
-        o.customer_email,
-        o.customer_name,
-        oi.product_id,
-        oi.quantity,
-        oi.price_at_purchase,
-        oi.product_image_url,
-        oi.product_name
-      FROM orders o
-      LEFT JOIN order_items oi ON o.order_id = oi.order_id
-      ORDER BY o.created_at DESC
+                o.order_id,
+                o.user_id,
+                o.total_amount,
+                o.status,
+                o.delivery_address,
+                o.created_at,
+                u.email AS customer_email,
+                CONCAT(u.first_name, ' ', u.last_name) AS customer_name,
+                oi.product_id,
+                oi.quantity,
+                oi.price_at_purchase,
+                oi.product_image_url,
+                oi.product_name,
+            FROM orders o
+            JOIN users u ON o.user_id = u.user_id
+            LEFT JOIN order_items oi ON o.order_id = oi.order_id
+            ORDER BY o.created_at DESC
     `;
     const orders = await new Promise((resolve, reject) => {
       db.query(query, (err, results) => {
