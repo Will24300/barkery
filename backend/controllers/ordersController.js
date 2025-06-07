@@ -55,7 +55,7 @@ const sendOrderConfirmationEmail = async (
     console.log(`Confirmation email sent to ${customerEmail}`);
   } catch (error) {
     console.error("Error sending email:", error);
-    throw new Error("Failed to send confirmation email");
+    // Log but don't throw to avoid failing the order
   }
 };
 
@@ -70,6 +70,9 @@ const createOrder = async (req, res) => {
       order_items,
     } = req.body;
 
+    // Log incoming request for debugging
+    console.log("Received order data:", req.body);
+
     // Validate input
     if (
       !total_amount ||
@@ -79,26 +82,43 @@ const createOrder = async (req, res) => {
       !order_items ||
       !Array.isArray(order_items)
     ) {
+      console.error("Validation failed: Missing required fields");
       return res
         .status(400)
         .json({ Error: "Missing required fields or invalid order items" });
     }
 
+    // Validate order items
+    for (const item of order_items) {
+      if (
+        !item.product_id ||
+        !item.quantity ||
+        !item.price_at_purchase ||
+        !item.product_image_url ||
+        !item.product_name
+      ) {
+        console.error("Invalid order item:", item);
+        return res.status(400).json({ Error: "Invalid order item data" });
+      }
+    }
+
     // Start a transaction
     db.beginTransaction((err) => {
       if (err) {
+        console.error("Transaction start error:", err);
         return res.status(500).json({ Error: "Failed to start transaction" });
       }
 
       // Insert into orders table
       const createOrderQuery = `
-        INSERT INTO orders (user_id, total_amount, status, delivery_address, created_at)
-        VALUES (?, ?, 'pending', ?, NOW())
-      `;
+  INSERT INTO orders (user_id, total_amount, status, delivery_address, created_at)
+  VALUES (?, ?, 'pending', ?, NOW())
+`;
       const orderData = [user_id || null, total_amount, delivery_address];
 
       db.query(createOrderQuery, orderData, (orderErr, orderResult) => {
         if (orderErr) {
+          console.error("Order insertion error:", orderErr);
           return db.rollback(() => {
             res
               .status(500)
@@ -110,9 +130,9 @@ const createOrder = async (req, res) => {
 
         // Prepare order items for insertion
         const orderItemsQuery = `
-          INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, product_image_url)
-          VALUES ?
-        `;
+    INSERT INTO order_items (order_id, product_id, quantity, price_at_purchase, product_image_url)
+    VALUES ?
+  `;
         const orderItemsData = order_items.map((item) => [
           orderId,
           item.product_id,
@@ -127,6 +147,7 @@ const createOrder = async (req, res) => {
           [orderItemsData],
           async (itemsErr, itemsResult) => {
             if (itemsErr) {
+              console.error("Order items insertion error:", itemsErr);
               return db.rollback(() => {
                 res
                   .status(500)
@@ -134,24 +155,22 @@ const createOrder = async (req, res) => {
               });
             }
 
-            // Send confirmation email (don't fail the order if email fails)
-            try {
-              await sendOrderConfirmationEmail(
-                customer_email,
-                customer_name,
-                orderId,
-                order_items,
-                total_amount,
-                delivery_address
-              );
-            } catch (emailError) {
+            // Send confirmation email (non-blocking)
+            sendOrderConfirmationEmail(
+              customer_email,
+              customer_name,
+              orderId,
+              order_items,
+              total_amount,
+              delivery_address
+            ).catch((emailError) => {
               console.error("Email sending failed:", emailError);
-              // Continue with the order even if email fails
-            }
+            });
 
             // Commit transaction
             db.commit((commitErr) => {
               if (commitErr) {
+                console.error("Transaction commit error:", commitErr);
                 return db.rollback(() => {
                   res
                     .status(500)
@@ -171,7 +190,7 @@ const createOrder = async (req, res) => {
   } catch (error) {
     console.error("Error creating order:", error);
     if (!res.headersSent) {
-      res.status(500).json({ Error: "Server error" });
+      res.status(500).json({ Error: "Server error: " + error.message });
     }
   }
 };
