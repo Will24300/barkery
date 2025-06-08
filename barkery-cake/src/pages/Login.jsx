@@ -63,7 +63,7 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-[#933C24] via-[#845a4e] to-[#933C24]">
+    <div className="flex items-center justify-center h-screen bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite]">
       <div className="md:h-screen md:grid justify-center items-center relative">
         <div className="absolute top-7 left-2">
           Or Go back to {"<-"}{" "}
