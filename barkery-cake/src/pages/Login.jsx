@@ -64,8 +64,8 @@ const Login = () => {
 
   return (
     <div className="flex items-center justify-center h-screen bg-gradient-to-r from-yellow-700 via-orange-900 to-yellow-700 bg-[length:200%_100%] bg-left animate-[gradient-x_5s_ease-in-out_infinite]">
-      <div className="md:h-screen md:grid justify-center items-center relative">
-        <div className="absolute top-7 left-2">
+      <div className="h-screen grid justify-center items-center relative">
+        <div className="absolute top-7 left-2 text-white font-semibold">
           Or Go back to {"<-"}{" "}
           <NavLink to="/" className="text-yellow-300 font-semibold">
             Home page
@@ -92,7 +92,7 @@ const Login = () => {
                   onChange={(e) =>
                     setValues({ ...values, email: e.target.value })
                   }
-                  className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                  className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                 />
               </div>
               <div className="px-2 mb-2">
@@ -102,7 +102,7 @@ const Login = () => {
                   onChange={(e) =>
                     setValues({ ...values, password: e.target.value })
                   }
-                  className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                  className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                 />
               </div>
               <div className="px-2 mb-1">

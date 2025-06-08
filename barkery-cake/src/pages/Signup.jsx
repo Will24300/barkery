@@ -67,7 +67,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     value={formData.first_name}
                     name="first_name"
-                    className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                   className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -78,7 +78,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     value={formData.last_name}
                     name="last_name"
-                    className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                   className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -89,7 +89,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     value={formData.phonenumber}
                     name="phonenumber"
-                    className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                   className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -100,7 +100,7 @@ const Signup = () => {
                     onChange={handleInputChange}
                     value={formData.email}
                     name="email"
-                    className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                   className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                     required
                   />
                 </div>
@@ -111,7 +111,7 @@ const Signup = () => {
                     value={formData.password}
                     onChange={handleInputChange}
                     name="password"
-                    className="w-full border-basic-border h-10 px-3 outline-none rounded-sm"
+                   className="w-full border-[1px] border-gray-400 focus:border-[#933C24] focus:outline-none h-10 px-3 rounded-sm"
                   />
                 </div>
                 <div className="py-2 text-center  px-4 col-span-2 ">
