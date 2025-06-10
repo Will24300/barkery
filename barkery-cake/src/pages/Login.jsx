@@ -21,15 +21,15 @@ const Login = () => {
       const response = await axios.post("/api/auth/login", values);
 
       if (response.status === 200) {
-        const { message, role, user, token } = response.data;
-        console.log("response.data", response.data);
+        const { message, user, token } = response.data;
+        console.log("Login response:", response.data);
 
         // Store token in localStorage
         localStorage.setItem("authToken", token);
 
-        // Update context
+        // Update context with the complete user object from the response
         setAuth(true);
-        setUserDetails({ ...user, role });
+        setUserDetails(user);
 
         Swal.fire({
           title: "Success!",
@@ -38,7 +38,7 @@ const Login = () => {
         });
 
         // Navigate based on role
-        switch (role.toLowerCase()) {
+        switch (user.role.toLowerCase()) {
           case "admin":
             navigate("/admin/dashboard");
             break;

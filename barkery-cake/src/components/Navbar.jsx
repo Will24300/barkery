@@ -10,16 +10,12 @@ export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
   const menus = ["Home", "Blog", "Services", "Contact Us"];
-  const { getCartCount, userDetails } = useUser();
+  const { getCartCount, userDetails, logout } = useUser();
 
   console.log("Here are user details", userDetails);
 
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem("userDetails");
-    navigate("/login");
-  };
 
   const handleToggle = (index) => {
     setActive(index);
@@ -114,7 +110,6 @@ export default function Navbar() {
               <div className="flex items-center gap-2 cursor-pointer hover:text-[#E9BD8C] transition-colors text-center bg-white border-[#513311] border-[2px] px-4 py-2 rounded text-[#513311]">
                 <span>Hi, {userDetails?.firstName}</span>
                 <div className="flex gap-2">
-            
                   <div className="dropdown dropdown-end">
                     <div
                       tabIndex={0}
@@ -139,7 +134,7 @@ export default function Navbar() {
                         </Link>
                       </li>
                       <li>
-                        <button onClick={handleLogout}>Logout</button>
+                        <button onClick={logout}>Logout</button>
                       </li>
                     </ul>
                   </div>

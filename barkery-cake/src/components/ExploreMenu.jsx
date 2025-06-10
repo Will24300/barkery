@@ -78,18 +78,22 @@ export default function ExploreMenu() {
     const itemInCart = cartItems.find(
       (cartItem) => cartItem.id === item.product_id
     );
+
     if (itemInCart) {
       toast.warning("Item already in cart!");
-    } else {
-      addToCart({
-        id: item.product_id,
-        name: item.name,
-        price: item.total_price,
-        image: item.image_url,
-        quantity,
-      });
-      toast.success("Item added to cart!");
+      return;
     }
+
+    // Ensure we're passing the correct data structure
+    addToCart({
+      id: item.product_id,
+      name: item.name,
+      price: parseFloat(item.total_price), // Ensure price is a number
+      image: item.image_url,
+      quantity: parseInt(quantity, 10), // Ensure quantity is a number
+    });
+
+    toast.success("Item added to cart!");
   };
 
   if (loading) {

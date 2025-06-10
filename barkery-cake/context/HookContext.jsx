@@ -56,45 +56,49 @@ const HookContextProvider = ({ children }) => {
   useEffect(() => {
     const savedCart = localStorage.getItem("barkeryCart");
     if (savedCart) {
-      const parsedCart = JSON.parse(savedCart);
-      const validCartItems = parsedCart.filter((item) =>
-        products.some((p) => p.product_id === item.id)
-      );
-      setCartItems(validCartItems);
-      localStorage.setItem("barkeryCart", JSON.stringify(validCartItems));
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCartItems(parsedCart);
+      } catch (error) {
+        console.error("Error parsing cart from localStorage:", error);
+        localStorage.removeItem("barkeryCart");
+      }
     }
-  }, [products]);
+  }, []);
 
   // Save cart to localStorage
   useEffect(() => {
-    localStorage.setItem("barkeryCart", JSON.stringify(cartItems));
+    if (cartItems.length > 0) {
+      localStorage.setItem("barkeryCart", JSON.stringify(cartItems));
+    }
   }, [cartItems]);
 
   const addToCart = (item) => {
-    const product = products.find((p) => p.product_id === item.id);
-    if (!product) {
-      console.error(`Product with ID ${item.id} not found`);
-      return;
-    }
     setCartItems((prevItems) => {
       const existingItem = prevItems.find(
         (cartItem) => cartItem.id === item.id
       );
+
       if (existingItem) {
-        return prevItems.map((cartItem) =>
+        const updatedItems = prevItems.map((cartItem) =>
           cartItem.id === item.id
-            ? { ...cartItem, quantity: cartItem.quantity + item.quantity }
+            ? {
+                ...cartItem,
+                quantity: cartItem.quantity + (item.quantity || 1),
+              }
             : cartItem
         );
+        return updatedItems;
       }
+
       return [
         ...prevItems,
         {
           id: item.id,
           name: item.name,
-          price: item.price,
+          price: parseFloat(item.price),
           image: item.image,
-          quantity: item.quantity,
+          quantity: item.quantity || 1,
         },
       ];
     });
@@ -131,26 +135,24 @@ const HookContextProvider = ({ children }) => {
   const verifyToken = async () => {
     const token = localStorage.getItem("authToken");
     if (!token) {
-      setAuth(false);
-      setUserDetails(null);
       setLoading(false);
       return;
     }
     try {
-      const decoded = jwtDecode(token);
       const response = await axios.get("/api/auth/verify", {
         headers: { Authorization: `Bearer ${token}` },
         withCredentials: true,
       });
-      if (response.data.valid) {
+
+      if (response.data.valid && response.data.user) {
         setAuth(true);
         setUserDetails({
-          id: decoded.id,
-          email: decoded.email,
-          role: decoded.role.toLowerCase(),
-          firstName: decoded.firstName,
-          lastName: decoded.lastName,
-          phone: decoded.phone,
+          id: response.data.user.id,
+          email: response.data.user.email,
+          role: response.data.user.role?.toLowerCase(),
+          firstName: response.data.user.firstName || "",
+          lastName: response.data.user.lastName || "",
+          phone: response.data.user.phone || "",
         });
       } else {
         localStorage.removeItem("authToken");
