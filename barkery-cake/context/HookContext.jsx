@@ -22,35 +22,66 @@ const HookContextProvider = ({ children }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [categoriesRes, productsRes, ordersRes, usersRes] =
-          await Promise.all([
-            axios.get("/api/categories"),
-            axios.get("/api/products"),
-            axios.get("/api/orders/all", {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-              withCredentials: true,
-            }),
-            axios.get("/api/users/all", {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-              },
-              withCredentials: true,
-            }),
-          ]);
-        setCategories(categoriesRes.data.categories);
-        setProducts(productsRes.data.products);
-        setOrders(ordersRes.data.orders);
-        setUsers(usersRes.data.users);
+        // First, fetch essential data that we know exists
+        const [categoriesRes, productsRes] = await Promise.all([
+          axios
+            .get("/api/categories")
+            .catch(() => ({ data: { categories: [] } })),
+          axios.get("/api/products").catch(() => ({ data: { products: [] } })),
+        ]);
+
+        // Set the essential data
+        setCategories(categoriesRes?.data?.categories || []);
+        setProducts(productsRes?.data?.products || []);
+
+        // Set loading to false for the main app since we have the essential data
+        setLoading(false);
+
+        // Then try to fetch user-specific data if authenticated
+        if (auth) {
+          try {
+            const [ordersRes, usersRes] = await Promise.all([
+              axios
+                .get("/api/orders/all", {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "authToken"
+                    )}`,
+                  },
+                  withCredentials: true,
+                })
+                .catch(() => ({ data: { orders: [] } })),
+
+              axios
+                .get("/api/users/all", {
+                  headers: {
+                    Authorization: `Bearer ${localStorage.getItem(
+                      "authToken"
+                    )}`,
+                  },
+                  withCredentials: true,
+                })
+                .catch(() => ({ data: { users: [] } })),
+            ]);
+
+            setOrders(ordersRes?.data?.orders || []);
+            setUsers(usersRes?.data?.users || []);
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+            setOrders([]);
+            setUsers([]);
+          }
+        }
       } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
+        console.error("Error fetching essential data:", error);
+        setCategories([]);
+        setProducts([]);
         setLoading(false);
       }
     };
+
     fetchData();
-  }, []);
+  }, [auth]);
 
   // Load cart from localStorage
   useEffect(() => {
@@ -76,12 +107,12 @@ const HookContextProvider = ({ children }) => {
   const addToCart = (item) => {
     setCartItems((prevItems) => {
       const existingItem = prevItems.find(
-        (cartItem) => cartItem.id === item.id
+        (cartItem) => cartItem.id === (item.product_id || item.id)
       );
 
       if (existingItem) {
         const updatedItems = prevItems.map((cartItem) =>
-          cartItem.id === item.id
+          cartItem.id === (item.product_id || item.id)
             ? {
                 ...cartItem,
                 quantity: cartItem.quantity + (item.quantity || 1),
@@ -94,10 +125,10 @@ const HookContextProvider = ({ children }) => {
       return [
         ...prevItems,
         {
-          id: item.id,
+          id: item.product_id || item.id, // Prefer product_id, fallback to id
           name: item.name,
           price: parseFloat(item.price),
-          image: item.image,
+          image: item.image_url || item.image,
           quantity: item.quantity || 1,
         },
       ];

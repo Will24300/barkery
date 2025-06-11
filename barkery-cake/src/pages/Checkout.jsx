@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useUser } from "../../context/HookContext";
 import { ToastContainer, toast } from "react-toastify";
@@ -6,8 +6,14 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const Checkout = () => {
-  const { userDetails, cartItems, getCartTotal, setCartItems, products } =
-    useUser();
+  const {
+    userDetails,
+    cartItems,
+    getCartTotal,
+    setCartItems,
+    products,
+    loading,
+  } = useUser();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -19,6 +25,22 @@ const Checkout = () => {
     paymentMethod: "cod",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true);
+  const [productsError, setProductsError] = useState(null);
+
+  // Check if products are loaded
+  useEffect(() => {
+    if (products.length > 0) {
+      setIsLoadingProducts(false);
+      setProductsError(null);
+    } else if (!loading) {
+      // If products are not loaded but loading is complete, there was an error
+      setProductsError(
+        "Failed to load products. Please refresh the page or try again later."
+      );
+      setIsLoadingProducts(false);
+    }
+  }, [products, loading]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -50,56 +72,80 @@ const Checkout = () => {
     }
 
     // Validate product IDs
-    const invalidItems = cartItems.filter(
-      (item) => !products.some((p) => p.id === item.id)
-    );
+    console.log("Validating cart items...");
+    console.log("Cart items:", JSON.parse(JSON.stringify(cartItems)));
+    console.log("Available products:", JSON.parse(JSON.stringify(products)));
+
+    const invalidItems = [];
+
+    // Check each cart item against the products list
+    cartItems.forEach((item) => {
+      const product = products.find((p) => {
+        // Check both id and product_id for matching
+        return p.product_id == item.id || p.id == item.id;
+      });
+
+      if (!product) {
+        console.error("Product not found for item:", item);
+        invalidItems.push(item);
+      } else {
+        console.log(`Found matching product for item ${item.id}:`, product);
+      }
+    });
+
     if (invalidItems.length > 0) {
-      toast.error(
-        `Invalid products in cart: ${invalidItems
-          .map((item) => item.name)
-          .join(", ")}`
-      );
+      const errorMessage = `Invalid products in cart: ${invalidItems
+        .map((item) => item.name)
+        .join(", ")}`;
+      console.error(errorMessage);
+      toast.error(errorMessage);
       setIsSubmitting(false);
       return;
     }
 
     try {
-      // Prepare order data
+      // Prepare order data with consistent product_id usage
       const orderData = {
         user_id: userDetails?.id || null,
         total_amount: getCartTotal(),
         status: "pending",
         delivery_address: formData.address,
-        customer_email: formData.email,
-        customer_name: `${formData.firstName} ${formData.lastName}`,
         order_items: cartItems.map((item) => {
-          const product = products.find((p) => p.id === item.id);
+          // Find the full product to get the correct product_id
+          const product = products.find(
+            (p) => p.product_id == item.id || p.id == item.id
+          );
+
           return {
-            product_id: item.id,
+            product_id: product ? product.product_id : item.id,
             quantity: item.quantity,
-            price_at_purchase: item.price,
-            product_image_url: product.image_url,
+            price_at_purchase: parseFloat(item.price),
+            product_image_url: product?.image_url || item.image,
             product_name: item.name,
           };
         }),
       };
 
-      console.log("Sending order data:", orderData);
+      console.log("Submitting order data:", orderData);
+
+      // Log the exact request being sent
+      console.log("Sending request to:", "/api/orders");
+      console.log("Request headers:", {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+      });
+      console.log("Request payload:", orderData);
 
       // API call
-      const response = await axios.post(
-        "http://localhost:8082/api/orders",
-        orderData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            ...(userDetails && {
-              Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-            }),
-          },
-          withCredentials: true,
-        }
-      );
+      const response = await axios.post("/api/orders", orderData, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+        },
+      });
+
+      console.log("Response status:", response.status);
+      console.log("Response data:", response.data);
 
       setCartItems([]);
       localStorage.setItem("barkeryCart", JSON.stringify([]));
@@ -117,6 +163,33 @@ const Checkout = () => {
       setIsSubmitting(false);
     }
   };
+
+  if (isLoadingProducts) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#933C24] mx-auto"></div>
+          <p className="mt-4 text-lg">Loading products...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center p-6 bg-red-50 rounded-lg">
+          <p className="text-red-600 font-medium">{productsError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-4 py-2 bg-[#933C24] text-white rounded hover:bg-[#7a3120] transition-colors"
+          >
+            Refresh Page
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">

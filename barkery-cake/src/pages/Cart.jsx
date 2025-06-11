@@ -7,7 +7,7 @@ const Cart = () => {
   const navigate = useNavigate();
   const {
     cartItems,
-    removeFromCart,
+    removeFromCart: removeFromCartFunc,
     updateQuantity,
     getCartTotal,
     userDetails,
@@ -28,11 +28,36 @@ const Cart = () => {
       }
     }, 100);
   };
+
   const checkPermission = () => {
     if (userDetails) {
       navigate("/checkout");
     } else {
       document.getElementById("my_modal_3").showModal();
+    }
+  };
+
+  const removeFromCart = (itemId) => {
+    const itemToRemove = cartItems.find(
+      (item) => item.id === itemId || item.product_id === itemId
+    );
+    if (itemToRemove) {
+      removeFromCartFunc(itemToRemove.id);
+      toast.error("Item removed from cart!");
+    }
+  };
+
+  const updateItemQuantity = (itemId, newQuantity) => {
+    const itemToUpdate = cartItems.find(
+      (item) => item.id === itemId || item.product_id === itemId
+    );
+    if (itemToUpdate) {
+      updateQuantity(itemToUpdate.id, newQuantity);
+      if (newQuantity > itemToUpdate.quantity) {
+        toast.success("Quantity increased!");
+      } else {
+        toast.warning("Quantity decreased!");
+      }
     }
   };
 
@@ -89,29 +114,27 @@ const Cart = () => {
                 </div>
                 <div className="flex items-center mt-4 md:mt-0">
                   <button
-                    onClick={() => {
-                      updateQuantity(item.id, item.quantity - 1);
-                      toast.warning("Quantity decreased!");
-                    }}
+                    onClick={() =>
+                      updateItemQuantity(
+                        item.id,
+                        Math.max(1, item.quantity - 1)
+                      )
+                    }
                     className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                   >
                     <FaMinus className="text-sm" />
                   </button>
                   <span className="mx-4">{item.quantity}</span>
                   <button
-                    onClick={() => {
-                      updateQuantity(item.id, item.quantity + 1);
-                      toast.success("Quantity increased!");
-                    }}
+                    onClick={() =>
+                      updateItemQuantity(item.id, item.quantity + 1)
+                    }
                     className="p-2 rounded-full hover:bg-gray-100 cursor-pointer"
                   >
                     <FaPlus className="text-sm" />
                   </button>
                   <button
-                    onClick={() => {
-                      removeFromCart(item.id);
-                      toast.error("Item removed from cart!");
-                    }}
+                    onClick={() => removeFromCart(item.id)}
                     className="ml-4 text-red-500 hover:text-red-700 cursor-pointer"
                   >
                     <FaTrash />

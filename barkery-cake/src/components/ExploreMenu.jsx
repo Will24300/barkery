@@ -74,26 +74,15 @@ export default function ExploreMenu() {
   };
 
   const handleAddToCart = (item) => {
-    const quantity = localQuantities[item.product_id] || 1;
-    const itemInCart = cartItems.find(
-      (cartItem) => cartItem.id === item.product_id
-    );
-
-    if (itemInCart) {
-      toast.warning("Item already in cart!");
-      return;
-    }
-
-    // Ensure we're passing the correct data structure
     addToCart({
-      id: item.product_id,
+      product_id: item.product_id, // Use product_id from the product
+      id: item.product_id, // Keep id for backward compatibility
       name: item.name,
-      price: parseFloat(item.total_price), // Ensure price is a number
-      image: item.image_url,
-      quantity: parseInt(quantity, 10), // Ensure quantity is a number
+      price: item.total_price || item.price,
+      image_url: item.image_url || item.image,
+      quantity: localQuantities[item.product_id] || 1,
     });
-
-    toast.success("Item added to cart!");
+    toast.success(`${item.name} added to cart!`);
   };
 
   if (loading) {

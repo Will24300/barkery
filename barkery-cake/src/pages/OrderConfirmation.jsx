@@ -45,7 +45,7 @@ const OrderConfirmation = () => {
         <h1 className="text-3xl font-bold ml-4">Thank You for Your Order!</h1>
       </div>
       <p className="text-lg mb-4">
-        Your order (ID: {orderId}) has been successfully placed.
+        Your order  has been successfully placed.
       </p>
       <p className="text-gray-600 mb-6">
         A confirmation email has been sent to your provided email address.

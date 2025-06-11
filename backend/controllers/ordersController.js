@@ -98,17 +98,58 @@ const createOrder = async (req, res) => {
         .status(400)
         .json({ error: "Missing required fields or invalid order items" });
     }
-    for (const item of order_items) {
+
+    // Validate order items
+    const orderItemErrors = [];
+    order_items.forEach((item, index) => {
+      const missingFields = [];
+      if (!item.product_id) missingFields.push("product_id");
+      if (!item.quantity) missingFields.push("quantity");
       if (
-        !item.product_id ||
-        !item.quantity ||
-        !item.price_at_purchase ||
-        !item.product_image_url ||
-        !item.product_name
-      ) {
-        return res.status(400).json({ error: "Invalid order item data" });
+        item.price_at_purchase === undefined ||
+        item.price_at_purchase === null
+      )
+        missingFields.push("price_at_purchase");
+      if (!item.product_image_url) missingFields.push("product_image_url");
+      if (!item.product_name) missingFields.push("product_name");
+
+      if (missingFields.length > 0) {
+        orderItemErrors.push(
+          `Item ${index + 1} is missing required fields: ${missingFields.join(
+            ", "
+          )}`
+        );
+      } else if (isNaN(parseFloat(item.price_at_purchase))) {
+        orderItemErrors.push(
+          `Item ${index + 1}: price_at_purchase must be a valid number`
+        );
+      } else if (typeof item.quantity !== "number" || item.quantity < 1) {
+        orderItemErrors.push(
+          `Item ${index + 1}: quantity must be a positive number`
+        );
       }
+    });
+
+    if (orderItemErrors.length > 0) {
+      console.log("Order validation errors:", orderItemErrors);
+      return res.status(400).json({
+        error: "Invalid order item data",
+        details: orderItemErrors,
+        receivedData: {
+          user_id,
+          total_amount,
+          delivery_address,
+          order_items: order_items.map((item) => ({
+            product_id: item.product_id,
+            quantity: item.quantity,
+            price_at_purchase: item.price_at_purchase,
+            product_image_url: item.product_image_url ? "present" : "missing",
+            product_name: item.product_name ? "present" : "missing",
+          })),
+        },
+      });
     }
+
     // Verify user exists and fetch email, name
     const userQuery = `SELECT email, CONCAT(first_name, ' ', last_name) AS customer_name FROM users WHERE user_id = ?`;
     const user = await new Promise((resolve, reject) => {
@@ -135,11 +176,9 @@ const createOrder = async (req, res) => {
       (id) => !existingProductIds.includes(id)
     );
     if (invalidProductIds.length > 0) {
-      return res
-        .status(400)
-        .json({
-          error: `Invalid product IDs: ${invalidProductIds.join(", ")}`,
-        });
+      return res.status(400).json({
+        error: `Invalid product IDs: ${invalidProductIds.join(", ")}`,
+      });
     }
     // Map product names for email
     const productNameMap = products.reduce((acc, p) => {
@@ -340,7 +379,7 @@ const getAllOrders = async (req, res) => {
       return acc;
     }, []);
     if (formattedOrders.length === 0) {
-      return res.status(404).json({ error: "No orders found" });
+      return res.status(200).json({ orders: [] });
     }
     res.status(200).json({ orders: formattedOrders });
   } catch (error) {
