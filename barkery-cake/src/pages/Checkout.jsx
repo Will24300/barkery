@@ -6,7 +6,8 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 
 const Checkout = () => {
-  const { userDetails, cartItems, getCartTotal, setCartItems, products } = useUser();
+  const { userDetails, cartItems, getCartTotal, setCartItems, products } =
+    useUser();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -50,7 +51,7 @@ const Checkout = () => {
 
     // Validate product IDs
     const invalidItems = cartItems.filter(
-      (item) => !products.some((p) => p.product_id === item.id)
+      (item) => !products.some((p) => p.id === item.id)
     );
     if (invalidItems.length > 0) {
       toast.error(
@@ -72,7 +73,7 @@ const Checkout = () => {
         customer_email: formData.email,
         customer_name: `${formData.firstName} ${formData.lastName}`,
         order_items: cartItems.map((item) => {
-          const product = products.find((p) => p.product_id === item.id);
+          const product = products.find((p) => p.id === item.id);
           return {
             product_id: item.id,
             quantity: item.quantity,
@@ -109,7 +110,8 @@ const Checkout = () => {
     } catch (error) {
       console.error("Error placing order:", error);
       toast.error(
-        error.response?.data?.Error || "Failed to place order. Please try again."
+        error.response?.data?.Error ||
+          "Failed to place order. Please try again."
       );
     } finally {
       setIsSubmitting(false);
@@ -167,7 +169,9 @@ const Checkout = () => {
         <div className="lg:col-span-2">
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="bg-gray-50 p-6 rounded-lg">
-              <h2 className="text-xl font-semibold mb-4">Customer Information</h2>
+              <h2 className="text-xl font-semibold mb-4">
+                Customer Information
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
@@ -273,7 +277,9 @@ const Checkout = () => {
               type="submit"
               disabled={isSubmitting}
               className={`w-full bg-[#933C24] text-white py-3 rounded-lg hover:bg-[#7a3120] transition-colors ${
-                isSubmitting ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+                isSubmitting
+                  ? "opacity-50 cursor-not-allowed"
+                  : "cursor-pointer"
               }`}
             >
               {isSubmitting ? "Placing Order..." : "Place Order"}
