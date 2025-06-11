@@ -106,7 +106,7 @@ const login = async (req, res) => {
   }
 
   try {
-    const query = `SELECT user_id, first_name, last_name, email, password, role FROM users WHERE email = ?`;
+    const query = `SELECT user_id, first_name, last_name, email, password, role, phonenumber FROM users WHERE email = ?`;
 
     db.query(query, [email], async (err, results) => {
       if (err) {
@@ -125,9 +125,16 @@ const login = async (req, res) => {
         return res.status(401).json({ Error: "Invalid email or password" });
       }
 
-      // Generate JWT token
+      // Generate JWT token with all necessary user details
       const token = jwt.sign(
-        { id: user.user_id, email: user.email, role: user.role },
+        {
+          id: user.user_id,
+          email: user.email,
+          role: user.role,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          phone: user.phonenumber,
+        },
         process.env.JWT_SECRET || "jwt-secret-key",
         { expiresIn: "1d" }
       );
@@ -147,6 +154,7 @@ const login = async (req, res) => {
             email: user.email,
             firstName: user.first_name,
             lastName: user.last_name,
+            phone: user.phonenumber,
             role: user.role,
           },
           token,
@@ -172,7 +180,28 @@ const verify = async (req, res) => {
       token,
       process.env.JWT_SECRET || "jwt-secret-key"
     );
-    return res.status(200).json({ valid: true, user: decoded });
+
+    // Get fresh user data from the database
+    const query =
+      "SELECT user_id, first_name, last_name, email, phonenumber, role FROM users WHERE user_id = ?";
+    db.query(query, [decoded.id], (err, results) => {
+      if (err || results.length === 0) {
+        return res.status(401).json({ valid: false, Error: "User not found" });
+      }
+
+      const user = results[0];
+      return res.status(200).json({
+        valid: true,
+        user: {
+          id: user.user_id,
+          email: user.email,
+          firstName: user.first_name,
+          lastName: user.last_name,
+          phone: user.phonenumber,
+          role: user.role,
+        },
+      });
+    });
   } catch (error) {
     return res.status(401).json({ valid: false, Error: "Invalid token" });
   }
