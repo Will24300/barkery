@@ -48,9 +48,12 @@ const updateUser = async (req, res) => {
     if (!first_name || !last_name || !email || !phonenumber || !role) {
       return res
         .status(400)
-        .json({ error: "First name, last name, email, and role are required" });
+        .json({
+          error:
+            "First name, last name, email, phonenumber, and role are required",
+        });
     }
-    const validRoles = ["user", "admin"];
+    const validRoles = ["customer", "delivery", "admin"];
     if (!validRoles.includes(role)) {
       return res.status(400).json({ error: "Invalid role value" });
     }
@@ -79,7 +82,7 @@ const updateUser = async (req, res) => {
             first_name,
             last_name,
             email,
-            phone,
+            phonenumber,
             role,
           },
         });
@@ -94,18 +97,31 @@ const updateUser = async (req, res) => {
 const deleteUser = async (req, res) => {
   try {
     const { user_id } = req.params;
-    const deleteQuery = `DELETE FROM users WHERE user_id = ?`;
-    db.query(deleteQuery, [user_id], (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
-        return res
-          .status(500)
-          .json({ error: "Deleting data error in users table" });
+    const checkRoleQuery = `SELECT role FROM users WHERE user_id = ?`;
+    db.query(checkRoleQuery, [user_id], (checkErr, checkResult) => {
+      if (checkErr) {
+        console.error("Database error:", checkErr);
+        return res.status(500).json({ error: "Error checking user role" });
       }
-      if (result.affectedRows === 0) {
+      if (checkResult.length === 0) {
         return res.status(404).json({ error: "User not found" });
       }
-      return res.status(200).json({ status: "Success" });
+      if (checkResult[0].role === "admin") {
+        return res.status(403).json({ error: "Cannot delete admin user" });
+      }
+      const deleteQuery = `DELETE FROM users WHERE user_id = ?`;
+      db.query(deleteQuery, [user_id], (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res
+            .status(500)
+            .json({ error: "Deleting data error in users table" });
+        }
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: "User not found" });
+        }
+        return res.status(200).json({ status: "Success" });
+      });
     });
   } catch (error) {
     console.error("Server error:", error);

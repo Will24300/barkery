@@ -2,7 +2,6 @@ import React from "react";
 import ManagementComponent from "./ManagementComponent";
 import { useUser } from "../../../context/HookContext";
 
-
 const CategoriesTab = () => {
   const { categories, setCategories } = useUser();
 
@@ -12,7 +11,22 @@ const CategoriesTab = () => {
     {
       key: "created_at",
       label: "Created At",
-      render: (item) => new Date(item.created_at).toLocaleString(),
+      render: (item) => {
+        if (!item.created_at) return "N/A";
+        try {
+          const date = new Date(item.created_at);
+          return date.toLocaleString("en-US", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+          });
+        } catch (error) {
+          console.error("Error formatting date:", error);
+          return "Invalid date";
+        }
+      },
     },
   ];
 
@@ -29,9 +43,9 @@ const CategoriesTab = () => {
       addFields={addFields}
       updateFields={updateFields}
       apiEndpoints={{
-        add: "/api/categories",
-        put: "/api/categories",
-        delete: "/api/categories",
+        add: "http://localhost:8082/api/categories",
+        put: "http://localhost:8082/api/categories/:category_id",
+        delete: "http://localhost:8082/api/categories/:category_id",
       }}
     />
   );

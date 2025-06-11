@@ -6,7 +6,8 @@ const addCategory = async (req, res) => {
     if (!name) {
       return res.status(400).json({ error: "Category name is required" });
     }
-    const addCategoryQuery = "INSERT INTO categories (name) VALUES (?)";
+    const addCategoryQuery =
+      "INSERT INTO categories (name, created_at) VALUES (?, NOW())";
     db.query(addCategoryQuery, [name], (err, result) => {
       if (err) {
         console.error("Database error:", err);
@@ -16,7 +17,7 @@ const addCategory = async (req, res) => {
       }
       return res.status(201).json({
         status: "Success",
-        data: { category_id: result.insertId, name },
+        data: { category_id: result.insertId, name, created_at: new Date() },
       });
     });
   } catch (error) {
@@ -28,10 +29,13 @@ const addCategory = async (req, res) => {
 const getCategories = async (req, res) => {
   try {
     const categories = await new Promise((resolve, reject) => {
-      db.query("SELECT * FROM categories", (error, results) => {
-        if (error) return reject(error);
-        resolve(results);
-      });
+      db.query(
+        "SELECT category_id, name, created_at FROM categories",
+        (error, results) => {
+          if (error) return reject(error);
+          resolve(results);
+        }
+      );
     });
     if (categories.length === 0) {
       return res.status(404).json({ error: "No categories found" });
@@ -75,18 +79,33 @@ const updateCategory = async (req, res) => {
 const deleteCategory = async (req, res) => {
   try {
     const { category_id } = req.params;
-    const deleteQuery = "DELETE FROM categories WHERE category_id = ?";
-    db.query(deleteQuery, [category_id], (err, result) => {
-      if (err) {
-        console.error("Database error:", err);
+    // Check if category is used by any products
+    const checkQuery =
+      "SELECT COUNT(*) as count FROM products WHERE category_id = ?";
+    db.query(checkQuery, [category_id], (checkErr, checkResult) => {
+      if (checkErr) {
+        console.error("Database error:", checkErr);
+        return res.status(500).json({ error: "Error checking category usage" });
+      }
+      if (checkResult[0].count > 0) {
         return res
-          .status(500)
-          .json({ error: "Deleting data error in categories table" });
+          .status(400)
+          .json({ error: "Cannot delete category used by products" });
       }
-      if (result.affectedRows === 0) {
-        return res.status(404).json({ error: "Category not found" });
-      }
-      return res.status(200).json({ status: "Success" });
+
+      const deleteQuery = "DELETE FROM categories WHERE category_id = ?";
+      db.query(deleteQuery, [category_id], (err, result) => {
+        if (err) {
+          console.error("Database error:", err);
+          return res
+            .status(500)
+            .json({ error: "Deleting data error in categories table" });
+        }
+        if (result.affectedRows === 0) {
+          return res.status(404).json({ error: "Category not found" });
+        }
+        return res.status(200).json({ status: "Success" });
+      });
     });
   } catch (error) {
     console.error("Server error:", error);

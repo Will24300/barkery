@@ -12,6 +12,7 @@ const ManagementComponent = ({
   updateFields,
   filterOptions,
   apiEndpoints,
+  expandableRows,
 }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [filterValue, setFilterValue] = useState("");
@@ -21,6 +22,7 @@ const ManagementComponent = ({
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [expandedRows, setExpandedRows] = useState({});
 
   const handleSearch = (e) => {
     setSearchTerm(e.target.value);
@@ -37,8 +39,7 @@ const ManagementComponent = ({
 
   const handleUpdateInputChange = (e) => {
     const { name, value } = e.target;
-    setUpdateForm((prev) => ({ ...prev,
-      [name]: value }));
+    setUpdateForm((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleImageChange = (e) => {
@@ -47,24 +48,36 @@ const ManagementComponent = ({
 
   const handleAdd = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(addFormData).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
 
     try {
-      const response = await axios.post(apiEndpoints.add, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          ...(imageFile && { "Content-Type": "multipart/form-data" }),
-        },
-        withCredentials: true,
-      });
+      let response;
+
+      if (imageFile) {
+        const formData = new FormData();
+        Object.entries(addForm).forEach(([key, value]) => {
+          formData.append(key, value);
+        });
+        formData.append("image", imageFile);
+
+        response = await axios.post(apiEndpoints.add, formData, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "multipart/form-data",
+          },
+          withCredentials: true,
+        });
+      } else {
+        response = await axios.post(apiEndpoints.add, addForm, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+            "Content-Type": "application/json",
+          },
+          withCredentials: true,
+        });
+      }
+
       setData([...data, response.data.data]);
-      setAddFormData({});
+      setAddForm({});
       setImageFile(null);
       setIsAddModalOpen(false);
       toast.success(`${entity} added successfully`);
@@ -76,25 +89,59 @@ const ManagementComponent = ({
 
   const handleUpdate = async (e) => {
     e.preventDefault();
-    const formData = new FormData();
-    Object.entries(updateForm).forEach(([key, value]) => {
-      formData.append(key, value);
-    });
-    if (imageFile) {
-      formData.append("image", imageFile);
-    }
 
     try {
-      await axios.put(`${apiEndpoints.put}/${selectedItem.id}`, formData, {
+      let response;
+      const isFileUpload = imageFile || selectedItem?.image_url;
+      const formData = new FormData();
+
+      if (isFileUpload) {
+        Object.entries(updateForm).forEach(([key, value]) => {
+          if (value !== undefined && value !== null) {
+            formData.append(key, value);
+          }
+        });
+        if (imageFile) {
+          formData.append("image", imageFile);
+        }
+      }
+
+      const requestData = isFileUpload ? formData : updateForm;
+      const config = {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-          ...(imageFile && { "Content-Type": "multipart/form-data" }),
+          ...(isFileUpload
+            ? { "Content-Type": "multipart/form-data" }
+            : { "Content-Type": "application/json" }),
         },
         withCredentials: true,
-      });
-      setData(data.map((item) =>
-        item.id === selectedItem.id ? { ...item, ...updateForm } : item
-      ));
+      };
+
+      const idField =
+        entity === "Category"
+          ? "category_id"
+          : entity === "User"
+          ? "user_id"
+          : entity === "Order"
+          ? "order_id"
+          : "product_id";
+
+      const idValue = selectedItem?.[idField];
+
+      if (!idValue) {
+        throw new Error(`Cannot update ${entity}: Missing ID`);
+      }
+
+      const updateUrl = apiEndpoints.put.replace(`:${idField}`, idValue);
+
+      response = await axios.put(updateUrl, requestData, config);
+
+      setData(
+        data.map((item) =>
+          item[idField] === idValue ? { ...item, ...response.data.data } : item
+        )
+      );
+
       setIsUpdateModalOpen(false);
       setSelectedItem(null);
       setUpdateForm({});
@@ -107,38 +154,92 @@ const ManagementComponent = ({
   };
 
   const handleDelete = async (id) => {
-    if (!confirm(`Are you sure you want to delete this ${entity}?`)) return;
-    try {
-      await axios.delete(`${apiEndpoints.delete}/${id}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("authToken")}`,
-        },
-        withCredentials: true,
-      });
-      setData(data.filter((item) => item.id !== id));
-      toast.success(`${entity} deleted successfully`);
-    } catch (error) {
-      console.error(`Error deleting ${entity}:`, error);
-      toast.error(error.response?.data?.error || `Failed to delete ${entity}`);
+    if (window.confirm(`Are you sure you want to delete this ${entity}?`)) {
+      try {
+        const idField =
+          entity === "Category"
+            ? "category_id"
+            : entity === "User"
+            ? "user_id"
+            : entity === "Order"
+            ? "order_id"
+            : "product_id";
+
+        const deleteUrl = apiEndpoints.delete.replace(`:${idField}`, id);
+
+        await axios.delete(deleteUrl, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("authToken")}`,
+          },
+          withCredentials: true,
+        });
+
+        setData(data.filter((item) => item[idField] !== id));
+        toast.success(`${entity} deleted successfully`);
+      } catch (error) {
+        console.error(`Error deleting ${entity}:`, error);
+        toast.error(
+          error.response?.data?.error || `Failed to delete ${entity}`
+        );
+      }
     }
   };
 
   const openUpdateModal = (item) => {
     setSelectedItem(item);
-    setUpdateFormData(item);
+    setUpdateForm(
+      entity === "Order"
+        ? { status: item.status }
+        : entity === "Category"
+        ? { name: item.name }
+        : entity === "User"
+        ? {
+            first_name: item.first_name,
+            last_name: item.last_name,
+            email: item.email,
+            phonenumber: item.phonenumber,
+            role: item.role,
+          }
+        : {
+            name: item.name,
+            description: item.description,
+            category_id: item.category_id,
+            total_price: item.total_price,
+          }
+    );
     setIsUpdateModalOpen(true);
   };
 
+  const toggleRowExpansion = (id) => {
+    setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
   const filteredData = data.filter((item) => {
-    const searchMatch = Object.values(item)
-      .some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      );
+    const searchMatch = Object.values(item).some((value) =>
+      value?.toString().toLowerCase().includes(searchTerm.toLowerCase())
+    );
     const filterMatch = filterValue
-      ? item[filterOptions.key] === filterValue
+      ? item[filterOptions?.key] === filterValue
       : true;
     return searchMatch && filterMatch;
   });
+
+  const highlightSearchTerm = (text) => {
+    if (!searchTerm) return text;
+    const parts = String(text).split(new RegExp(`(${searchTerm})`, "gi"));
+    return parts.map((part, i) =>
+      part.toLowerCase() === searchTerm.toLowerCase() ? (
+        <span key={i} className="bg-yellow-800 text-white px-1 rounded">
+          {part}
+        </span>
+      ) : (
+        part
+      )
+    );
+  };
 
   return (
     <div className="p-4 bg-white dark:bg-gray-900 rounded-lg shadow-md">
@@ -155,8 +256,7 @@ const ManagementComponent = ({
       />
 
       {/* Search and Filter Bar */}
-      <div
- className="flex flex-col md:flex-row justify-between items-center mb-4">
+      <div className="flex flex-col md:flex-row justify-between items-center mb-4">
         <div className="flex items-center mb-2 md:mb-0">
           <input
             type="text"
@@ -169,7 +269,7 @@ const ManagementComponent = ({
             <select
               value={filterValue}
               onChange={handleFilter}
-              className="ml-2 p-2 border border-gray-200 focus:border-[#933C24] rounded-sm"
+              className="ml-2 p-2 border border-gray-200 focus:border-[#933C24] rounded-sm cursor-pointer"
             >
               <option value="">All</option>
               {filterOptions.options.map((opt) => (
@@ -183,7 +283,7 @@ const ManagementComponent = ({
         {addFields && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-[#933C24] text-white py-2 px-4 rounded-lg hover:bg-[#7a3120]"
+            className="bg-[#933C24] text-white py-2 px-4 rounded-lg hover:bg-[#7a3120] cursor-pointer"
           >
             Add {entity}
           </button>
@@ -196,10 +296,7 @@ const ManagementComponent = ({
           <thead>
             <tr className="bg-gray-200 dark:bg-gray-700 text-black dark:text-white">
               {columns.map((col) => (
-                <th
-                  key={col.key}
-                  className="py-3 px-4 text-sm font-semibold"
-                >
+                <th key={col.key} className="py-3 px-4 text-sm font-semibold">
                   {col.label}
                 </th>
               ))}
@@ -209,35 +306,142 @@ const ManagementComponent = ({
           <tbody>
             {filteredData.length > 0 ? (
               filteredData.map((item) => (
-                <tr
-                  key={item.id}
-                  className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                <React.Fragment
+                  key={
+                    item.order_id ||
+                    item.category_id ||
+                    item.user_id ||
+                    item.product_id
+                  }
                 >
-                  {columns.map((col) => (
-                    <td
-                      key={col.key}
-                      className="py-3 px-4 text-sm text-gray-600 dark:text-gray-300"
-                    >
-                      {col.render ? col.render(item) : item[col.key]}
-                    </td>
-                  ))}
-                  <td className="py-3 px-4 text-sm">
-                    {updateFields && (
-                      <button
-                        onClick={() => openUpdateModal(item)}
-                        className="text-blue-500 hover:text-blue-700 mr-2"
+                  <tr className="bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md">
+                    {columns.map((col) => (
+                      <td
+                        key={col.key}
+                        className="py-3 px-4 text-sm border-b border-gray-200 dark:border-gray-700"
                       >
-                        Edit
+                        {col.render
+                          ? col.render(item)
+                          : highlightSearchTerm(item[col.key] || "")}
+                      </td>
+                    ))}
+                    <td className="py-3 px-4 text-sm">
+                      {updateFields && (
+                        <button
+                          onClick={() => openUpdateModal(item)}
+                          className="text-blue-500 hover:text-blue-700 mr-2 cursor-pointer"
+                          disabled={item.role === "admin"}
+                        >
+                        {item.role == "admin" ? "Denied" : "Edit"}
+                        </button>
+                      )}
+                      <button
+                        onClick={() =>
+                          handleDelete(
+                            item[
+                              entity === "Category"
+                                ? "category_id"
+                                : entity === "User"
+                                ? "user_id"
+                                : entity === "Order"
+                                ? "order_id"
+                                : "product_id"
+                            ]
+                          )
+                        }
+                        className="text-red-500 hover:text-red-700 cursor-pointer"
+                        disabled={item.role === "admin"}
+                      >
+                       {item.role == "admin" ? "Denied" : "Delete"}
                       </button>
+                      {expandableRows &&
+                        item[expandableRows.key]?.length > 0 && (
+                          <button
+                            onClick={() =>
+                              toggleRowExpansion(
+                                item[
+                                  entity === "Category"
+                                    ? "category_id"
+                                    : entity === "User"
+                                    ? "user_id"
+                                    : entity === "Order"
+                                    ? "order_id"
+                                    : "product_id"
+                                ]
+                              )
+                            }
+                            className="ml-2 text-gray-500 hover:text-gray-700 cursor-pointer"
+                          >
+                            {expandedRows[
+                              item[
+                                entity === "Category"
+                                  ? "category_id"
+                                  : entity === "User"
+                                  ? "user_id"
+                                  : entity === "Order"
+                                  ? "order_id"
+                                  : "product_id"
+                              ]
+                            ]
+                              ? "Collapse"
+                              : "Expand"}
+                          </button>
+                        )}
+                    </td>
+                  </tr>
+                  {expandableRows &&
+                    expandedRows[
+                      item.order_id ||
+                        item.category_id ||
+                        item.user_id ||
+                        item.product_id
+                    ] && (
+                      <tr>
+                        <td
+                          colSpan={columns.length + 1}
+                          className="bg-gray-100 dark:bg-gray-700 p-4"
+                        >
+                          <table className="table w-full border-separate border-spacing-y-1">
+                            <thead>
+                              <tr className="bg-gray-200 dark:bg-gray-600 text-black dark:text-white">
+                                {expandableRows.columns.map((col) => (
+                                  <th
+                                    key={col.key}
+                                    className="py-2 px-3 text-sm font-semibold"
+                                  >
+                                    {col.label}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {item[expandableRows.key].map(
+                                (subItem, index) => (
+                                  <tr
+                                    key={index}
+                                    className="bg-gray-50 dark:bg-gray-800"
+                                  >
+                                    {expandableRows.columns.map((col) => (
+                                      <td
+                                        key={col.key}
+                                        className="py-2 px-3 text-sm"
+                                      >
+                                        {col.render
+                                          ? col.render(subItem)
+                                          : highlightSearchTerm(
+                                              subItem[col.key] || ""
+                                            )}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                )
+                              )}
+                            </tbody>
+                          </table>
+                        </td>
+                      </tr>
                     )}
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="text-red-500 hover:text-red-700"
-                    >
-                      Delete
-                    </button>
-                  </td>
-                </tr>
+                </React.Fragment>
               ))
             ) : (
               <tr>
@@ -273,7 +477,11 @@ const ManagementComponent = ({
                     >
                       <option value="">Select {field.label}</option>
                       {field.options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          disabled={opt.disabled}
+                        >
                           {opt.label}
                         </option>
                       ))}
@@ -300,13 +508,13 @@ const ManagementComponent = ({
                 <button
                   type="button"
                   onClick={() => setIsAddModalOpen(false)}
-                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg"
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#933C24] text-white py-2 px-4 rounded-lg"
+                  className="bg-[#933C24] text-white py-2 px-4 rounded-lg cursor-pointer"
                 >
                   Add
                 </button>
@@ -336,7 +544,11 @@ const ManagementComponent = ({
                     >
                       <option value="">Select {field.label}</option>
                       {field.options.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
+                        <option
+                          key={opt.value}
+                          value={opt.value}
+                          disabled={opt.disabled}
+                        >
                           {opt.label}
                         </option>
                       ))}
@@ -363,13 +575,13 @@ const ManagementComponent = ({
                 <button
                   type="button"
                   onClick={() => setIsUpdateModalOpen(false)}
-                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg"
+                  className="bg-gray-300 text-gray-700 py-2 px-4 rounded-lg cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="bg-[#933C24] text-white py-2 px-4 rounded-lg"
+                  className="bg-[#933C24] text-white py-2 px-4 rounded-lg cursor-pointer"
                 >
                   Update
                 </button>

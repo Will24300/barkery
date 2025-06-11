@@ -2,8 +2,6 @@ import React from "react";
 import ManagementComponent from "./ManagementComponent";
 import { useUser } from "../../../context/HookContext";
 
-
-
 const ProductsTab = () => {
   const { products, setProducts, categories } = useUser();
 
@@ -15,7 +13,8 @@ const ProductsTab = () => {
     {
       key: "total_price",
       label: "Price",
-      render: (item) => `$${item.total_price.toFixed(2)}`,
+      render: (item) =>
+        `$${item.total_price ? Number(item.total_price).toFixed(2) : "0.00"}`,
     },
     {
       key: "image_url",
@@ -81,9 +80,9 @@ const ProductsTab = () => {
         })),
       }}
       apiEndpoints={{
-        add: "/api/products",
-        put: "/api/products",
-        delete: "/api/products",
+        add: "http://localhost:8082/api/products/add",
+        put: "http://localhost:8082/api/products/:product_id",
+        delete: "http://localhost:8082/api/products/:product_id",
       }}
     />
   );
