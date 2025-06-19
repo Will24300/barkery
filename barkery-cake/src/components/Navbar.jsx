@@ -17,6 +17,10 @@ export default function Navbar() {
   const navigate = useNavigate();
 
 
+   const handleLogout = () => {
+     localStorage.removeItem("userDetails");
+     navigate("/login");
+   };
   const handleToggle = (index) => {
     setActive(index);
     if (isMobile) {
@@ -134,7 +138,7 @@ export default function Navbar() {
                         </Link>
                       </li>
                       <li>
-                        <button onClick={logout}>Logout</button>
+                        <button onClick={handleLogout}>Logout</button>
                       </li>
                     </ul>
                   </div>
