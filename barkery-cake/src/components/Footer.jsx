@@ -70,7 +70,7 @@ export default function Footer() {
             Explore
           </h2>
           <ul className="text-white">
-            {["home", "Blog", "Contact Us", "Services"].map((item, index) => (
+            {["home", "trending", "Contact Us", "Services"].map((item, index) => (
               <li
                 key={index}
                 className="leading-7 md:leading-8 text-sm md:text-[17px] font-semibold capitalize cursor-pointer hover:text-[#E9BD8D] transition-colors"
