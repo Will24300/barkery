@@ -17,7 +17,7 @@ export default function Home() {
       <div id="home">
         <Navbar setAuth={setAuth} setUserDetails={setUserDetails} />
       </div>
-      <div id="blog" className="min-h-screen">
+      <div id="trending" className="min-h-screen">
         <Products />
       </div>
       <div id="services" className="min-h-screen">

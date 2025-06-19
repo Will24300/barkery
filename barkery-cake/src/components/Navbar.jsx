@@ -9,7 +9,7 @@ export default function Navbar() {
   const [active, setActive] = useState(0);
   const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const menus = ["Home", "Blog", "Services", "Contact Us"];
+  const menus = ["Home", "Trending", "Services", "Contact Us"];
   const { getCartCount, userDetails } = useUser();
 
   console.log("Here are user details", userDetails);
